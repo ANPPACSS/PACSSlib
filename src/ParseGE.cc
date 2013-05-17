@@ -8,7 +8,7 @@ ParseGE::ParseGE()
 	// Parameterless constructor, for ROOT. Not used.
 }
 
-ParseGE::ParseGE(string newInFileName, string newOutFileName)
+ParseGE::ParseGE(string newInFileName, string newOutFileName, int clockMult)
 {
   inFileName = newInFileName;
   outFileName = newOutFileName;
@@ -27,6 +27,7 @@ ParseGE::ParseGE(string newInFileName, string newOutFileName)
   doneReading = false;
 	rawWrap = false;
 	rawStartIndex = 0;
+	clockMultiplier = clockMult;
 
   OpenGEFile();
   OpenROOTFile();
@@ -204,7 +205,7 @@ void ParseGE::ReadSingleEvent()
   ReadWord();
   timestamp = (timestamp << 32) + word;
   event->SetTimestamp((double)timestamp, false);
-	event->SetTimestamp((double)(timestamp*CLOCK_MULT_GE), true);
+	event->SetTimestamp((double)(timestamp*clockMultiplier), true);
 	
 	// Account for the extra 2 words from the wrap
 	if(rawWrap)

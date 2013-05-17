@@ -1,1 +1,7 @@
-This is PACSSlib.
+Positron Annihilation Coincidence Scanning System
+PACSS
+
+This repository contains the code used for analysis of data from the PACSS. The
+library is based around the ROOT data analysis framework and has several classes that are convenient for storing data from the different detector systems.
+
+The code herein is tested with ROOT 5.34.(04, 07) on Ubuntu 12.04 with ROOT installed in /usr/local/root. No guarantees or attempts are made with regards to it working in any other configuration!
