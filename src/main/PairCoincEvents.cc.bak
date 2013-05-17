@@ -1,0 +1,131 @@
+#include "../COINCEvent.hh"
+#include "../LYSORun.hh"
+#include "../GERun.hh"
+
+void PairEvents(double dtWindow, string fileNameLYSO, string fileNameGE);
+
+int main(int argc, char *argv[])
+{
+  string fileNameLYSO;
+  string fileNameGE;
+  double dtWindow;
+
+  // Handle the command line arguments
+  switch(argc)
+  {
+    case 4:
+      fileNameLYSO = (string)argv[1];
+      fileNameGE = (string)argv[2];
+      dtWindow = (double)atoi(argv[3]);
+      cout << "Beginning event pairing with a window of " << dtWindow;
+      cout << " nanoseconds." << endl;
+      break;
+    default:
+      cout << "Usage: " << argv[0] << " [LYSO ROOT file] ";
+      cout << "[GE ROOT file] [dT window, ns]" << endl;
+      return 1;
+  }
+
+  PairEvents(dtWindow, fileNameLYSO, fileNameGE);
+
+  return 0;
+}
+
+void PairEvents(double dtWindow, string fileNameLYSO, string fileNameGE)
+{
+  uint64_t startLYSO = 0;
+  uint64_t startGE = 0;
+
+  // ROOT stuff
+  TFile *rootFile = new TFile("paired_events.root", "RECREATE");
+  TTree *eventTree = new TTree("COINCEvents", "COINCEvents");
+  COINCEvent *event = new COINCEvent();
+  eventTree->Branch("event", &event);
+  cout << "ROOT file loaded, tree created." << endl;
+
+  // Make the run objects
+  GERun *runGE = new GERun(fileNameGE);
+  LYSORun *runLYSO = new LYSORun(fileNameLYSO);
+
+  // The GE should always have less events, so loop over the LYSO events
+  int numEvents = runLYSO->GetNumEvents();
+
+  // Get the offset for subtraction
+  startLYSO = runLYSO->GetEvent(0)->GetTimestamp()*100;
+  startGE = runGE->GetEvent(0)->GetT50Timestamp()*CLOCK_MULT;
+
+  cout << "First timestamps: " << startLYSO << " " << startGE << endl;
+
+  int iLYSO = 0;
+  int iGE = 0;
+  int nFilled = 0;
+  for(iLYSO=0;iLYSO < numEvents;iLYSO++)
+  {
+    // Get a set of timestamps, convert to ns and subtract offset
+    uint64_t timeLYSO=(runLYSO->GetEvent(iLYSO)->GetTimestamp()*100)-startLYSO;
+    uint64_t timeGE=(runGE->GetEvent(iGE)->GetT50Timestamp()*CLOCK_MULT)-startGE;
+
+    // Clear out the event object
+    rootFile->cd();
+    event->Clear();
+
+    // Check if in window
+    if(fabs((double)timeLYSO - (double)timeGE) < dtWindow)
+    {
+      // Check for LYSO error flags
+      bool fIE = runLYSO->GetEvent(iLYSO)->IsInputError();
+      bool fOOR = runLYSO->GetEvent(iLYSO)->IsOutOfRange();
+      if(fIE || fOOR) // skip this pair of events
+      {
+        iGE++;
+        continue;
+      }
+      rootFile->cd();
+      // Coincidence! Cast as double to make it a little cleaner
+      event->GetCharge() = runLYSO->GetEvent(iLYSO)->GetCharge();
+      event->SetLYSOEnergy((double)runLYSO->GetEvent(iLYSO)->GetEnergy());
+      event->SetGEEnergy((double)runGE->GetEvent(iGE)->GetEnergy());
+      event->SetLYSOTimestamp(timeLYSO);
+      event->SetGETimestamp(timeGE);
+
+      // Convert waveform to doubles. Doing so with initialization avoids
+      // having to write a loop using vector iterators!
+      vector<uint16_t> rawTrace = runGE->GetEvent(iGE)->GetRawTrace();
+      vector<double> newRawTrace(rawTrace.begin(), rawTrace.end());
+      event->SetRawTrace(newRawTrace);
+      vector<int> energyTrace = runGE->GetEvent(iGE)->GetEnergyTrace();
+      vector<double> newEnergyTrace(energyTrace.begin(), energyTrace.end());
+      event->SetEnergyTrace(newEnergyTrace);
+
+      // Copy over the gauss positions from the LYSOEvent
+      event->SetGaussXPos(runLYSO->GetEvent(iLYSO)->GetGaussXPos());
+      event->SetGaussYPos(runLYSO->GetEvent(iLYSO)->GetGaussYPos());
+
+      // Don't forget charge! (I forgot :()
+      vector<double> charge = runLYSO->GetEvent(iLYSO)->GetCharge();
+      vector<double> newCharge(charge.begin(), charge.end());
+      event->SetCharge(charge);
+
+      // Increment iGE since we found something and fill
+      rootFile->cd();
+      eventTree->Fill();
+      iGE++;
+      nFilled++;
+    }
+
+    if(iLYSO % 10000 == 0)
+    {
+      cout << "Attempting to pair LYSO event " << iLYSO << ". deltaT: ";
+      cout << (double)timeLYSO - (double)timeGE << "." << endl;
+    }
+    // No coincidence, only iLYSO gets incremented
+  }
+  
+  cout << nFilled << " events successfully paired." << endl;
+
+  rootFile->cd();
+  rootFile->Write();
+  rootFile->Close();
+  cout << "Paired events written to paired_events.root." << endl;
+  return;
+}
