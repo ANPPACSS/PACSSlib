@@ -81,6 +81,8 @@ TH2D* COINCRun::Get2DHist(string histName)
 	return (TH2D*)gDirectory->FindObject(histName.c_str());
 }
 
+// Some analysis functions will go here for the time being, as opposed to being put into the GEEvent object
+// this is to avoid re-parsing every time a new function is added
 vector<double> COINCRun::SubtractBaseline(vector<double> aWF, int nSampAvg)
 {
 	double avg = 0.0;
