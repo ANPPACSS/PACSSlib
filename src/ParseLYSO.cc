@@ -99,7 +99,7 @@ void ParseLYSO::LoadGainCorrection()
 	ifstream gainFile;
 	string buf;
 
-	gainFile.open("/PACSS/src/gaincorr.txt");
+	gainFile.open("/home/micah/PACSS/PACSSlib/src/gaincorr.txt");
 
 	if(!gainFile.good())
 	{
