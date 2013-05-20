@@ -1,5 +1,5 @@
 /* AGEEvent.hh
-Header for AGEEvent abstract class. This class is inherited by:
+Header for AGEEvent base class. This class is inherited by:
 	1. GEEvent, which holds the SIS raw event information (no analysis)
 	2. COINCEvent, which holds the raw paired event information
 This class only contains event traits which are parsed directly from the STRUCK data file. Calculated
@@ -54,7 +54,7 @@ class AGEEvent
 		void					 SetChannel(int newChannel);
 		void					 SetClockFreq(int newClockFreq); // in MHz
 
-		void					 CalcT1ToT2Time(double fracA, double fracB, int &nTime, bool inNanoSecs=false);
+		//void					 CalcT1ToT2Time(double fracA, double fracB, int &nTime, bool inNanoSecs=false);
 
 		// Other useful functions
 		void					 Clear();

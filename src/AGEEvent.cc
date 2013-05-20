@@ -1,5 +1,5 @@
 /* AGEEvent.cc
-Implementation source file for AGEEvent abstract class. See AGEEvent.hh for details.
+Implementation source file for AGEEvent base class. See AGEEvent.hh for details.
 */
 #include "AGEEvent.hh"
 
@@ -17,25 +17,25 @@ AGEEvent::~AGEEvent()
 
 double AGEEvent::GetEnergyGE()
 {
-	return energy;
+	return energyGE;
 }
 
 double AGEEvent::GetEnergyGEMax()
 {
-	return energyMax;
+	return energyGEMax;
 }
 
 double AGEEvent::GetEnergyGEFirst()
 {
-	return energyFirst;
+	return energyGEFirst;
 }
 
 double AGEEvent::GetTimestampGE(bool inNanoSecs)
 {
 	if(inNanoSecs)
-		return timestampNS;
+		return timestampGENS;
 	else
-		return timestamp;
+		return timestampGE;
 }
 
 vector<double> AGEEvent::GetWFRaw()
@@ -43,7 +43,7 @@ vector<double> AGEEvent::GetWFRaw()
 	return wfRaw;
 }
 
-vector<double> AGEEvent::GetWFEnergyGE()
+vector<double> AGEEvent::GetWFEnergy()
 {
 	return wfEnergy;
 }
@@ -65,28 +65,28 @@ int AGEEvent::GetClockFreq()
 
 void AGEEvent::SetEnergyGE(double newEnergy)
 {
-	energy = newEnergy;
+	energyGE = newEnergy;
 	return;
 }
 
 void AGEEvent::SetEnergyGEMax(double newEnergyMax)
 {
-	energyMax = newEnergyMax;
+	energyGEMax = newEnergyMax;
 	return;
 }
 
 void AGEEvent::SetEnergyGEFirst(double newEnergyFirst)
 {
-	energyFirst = newEnergyFirst;
+	energyGEFirst = newEnergyFirst;
 	return;
 }
 
 void AGEEvent::SetTimestampGE(double newTimestamp, bool inNanoSecs)
 {
 	if(inNanoSecs)
-		timestampNS = newTimestamp;
+		timestampGENS = newTimestamp;
 	else
-		timestamp = newTimestamp;
+		timestampGE = newTimestamp;
 	return;
 }
 
@@ -120,7 +120,7 @@ void AGEEvent::SetClockFreq(int newClockFreq)
 	return;
 }
 
-void AGEEvent::CalcT1ToT2Time(double fracA, double fracB, int &nTime, bool inNanoSecs)
+/*void AGEEvent::CalcT1ToT2Time(double fracA, double fracB, int &nTime, bool inNanoSecs)
 {
 	// Make sure there is a waveform
 	if(wfRaw.size() == 0)
@@ -160,7 +160,7 @@ void AGEEvent::CalcT1ToT2Time(double fracA, double fracB, int &nTime, bool inNan
 
   delete hWF;
   return;
-}
+}*/
 
 void AGEEvent::Clear()
 {
