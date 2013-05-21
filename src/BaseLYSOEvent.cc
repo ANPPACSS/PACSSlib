@@ -15,27 +15,27 @@ BaseLYSOEvent::~BaseLYSOEvent()
 	// Does nothing
 }
 
-vector<double> BaseLYSOEvent::GetCharge()
+const vector<double> BaseLYSOEvent::GetCharge() const
 {
 	return charge;
 }
 
-vector<double> BaseLYSOEvent::GetChargeGC()
+const vector<double> BaseLYSOEvent::GetChargeGC() const
 {
 	return chargeGC;
 }
 
-double BaseLYSOEvent::GetEnergyLYSO()
+const double BaseLYSOEvent::GetEnergyLYSO() const
 {
 	return energyLYSO;
 }
 
-double BaseLYSOEvent::GetEnergyLYSOGC()
+const double BaseLYSOEvent::GetEnergyLYSOGC() const
 {
 	return energyLYSOGC;
 }
 
-double BaseLYSOEvent::GetTimestampLYSO(bool inNanoSecs)
+const double BaseLYSOEvent::GetTimestampLYSO(bool inNanoSecs) const
 {
 	if(inNanoSecs)
 		return timestampLYSONS;
@@ -43,12 +43,12 @@ double BaseLYSOEvent::GetTimestampLYSO(bool inNanoSecs)
 		return timestampLYSO;
 }
 
-bool BaseLYSOEvent::ErrInput()
+const bool BaseLYSOEvent::ErrInput() const
 {
 	return errInput;
 }
 
-bool BaseLYSOEvent::ErrOutOfRange()
+const bool BaseLYSOEvent::ErrOutOfRange() const
 {
 	return errOutOfRange;
 }

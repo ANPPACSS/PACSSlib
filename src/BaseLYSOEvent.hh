@@ -30,13 +30,13 @@ class BaseLYSOEvent
 		virtual ~BaseLYSOEvent();
 
 		// Getter functions
-		vector<double> GetCharge();
-		vector<double> GetChargeGC();
-		double				 GetEnergyLYSO();
-		double				 GetEnergyLYSOGC();
-		double				 GetTimestampLYSO(bool inNanoSecs=false);
-		bool					 ErrInput();
-		bool					 ErrOutOfRange();
+		const vector<double> GetCharge() const;
+		const vector<double> GetChargeGC() const;
+		const double				 GetEnergyLYSO() const;
+		const double				 GetEnergyLYSOGC() const;
+		const double				 GetTimestampLYSO(bool inNanoSecs=false) const;
+		const bool					 ErrInput() const;
+		const bool					 ErrOutOfRange() const;
 
 		// Setter functions
 		void					 SetCharge(vector<double> newCharge);

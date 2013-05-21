@@ -33,15 +33,15 @@ class BaseGEEvent
 		virtual ~BaseGEEvent();
 
 		// Getter functions
-		double				 GetEnergyGE();
-		double				 GetEnergyGEMax();
-		double				 GetEnergyGEFirst();
-		double 				 GetTimestampGE(bool inNanoSecs=false);
-		vector<double> GetWFRaw();
-		vector<double> GetWFEnergy();
-		vector<double> GetWFDiff();
-		int						 GetChannel();
-		int						 GetClockFreq(); // in MHz
+		const double				 GetEnergyGE() const;
+		const double				 GetEnergyGEMax() const;
+		const double				 GetEnergyGEFirst() const;
+		const double 				 GetTimestampGE(bool inNanoSecs=false) const;
+		const vector<double> GetWFRaw() const;
+		const vector<double> GetWFEnergy() const;
+		const vector<double> GetWFDiff() const;
+		const int						 GetChannel() const;
+		const int						 GetClockFreq() const; // in MHz
 
 		// Setter functions
 		void					 SetEnergyGE(double newEnergy);

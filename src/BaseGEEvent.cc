@@ -15,22 +15,22 @@ BaseGEEvent::~BaseGEEvent()
 	// Does nothing
 }
 
-double BaseGEEvent::GetEnergyGE()
+const double BaseGEEvent::GetEnergyGE() const
 {
 	return energyGE;
 }
 
-double BaseGEEvent::GetEnergyGEMax()
+const double BaseGEEvent::GetEnergyGEMax() const
 {
 	return energyGEMax;
 }
 
-double BaseGEEvent::GetEnergyGEFirst()
+const double BaseGEEvent::GetEnergyGEFirst() const
 {
 	return energyGEFirst;
 }
 
-double BaseGEEvent::GetTimestampGE(bool inNanoSecs)
+const double BaseGEEvent::GetTimestampGE(bool inNanoSecs) const
 {
 	if(inNanoSecs)
 		return timestampGENS;
@@ -38,27 +38,27 @@ double BaseGEEvent::GetTimestampGE(bool inNanoSecs)
 		return timestampGE;
 }
 
-vector<double> BaseGEEvent::GetWFRaw()
+const vector<double> BaseGEEvent::GetWFRaw() const
 {
 	return wfRaw;
 }
 
-vector<double> BaseGEEvent::GetWFEnergy()
+const vector<double> BaseGEEvent::GetWFEnergy() const
 {
 	return wfEnergy;
 }
 
-vector<double> BaseGEEvent::GetWFDiff()
+const vector<double> BaseGEEvent::GetWFDiff() const
 {
 	return wfDiff;
 }
 
-int BaseGEEvent::GetChannel()
+const int BaseGEEvent::GetChannel() const
 {
 	return channel;
 }
 
-int BaseGEEvent::GetClockFreq()
+const int BaseGEEvent::GetClockFreq() const
 {
 	return clockFreq;
 }
