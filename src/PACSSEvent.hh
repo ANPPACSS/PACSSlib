@@ -12,6 +12,7 @@
 #include <TROOT.h>
 #include <TFile.h>
 #include <TTree.h>
+#include <TBranch.h>
 #include <TObject.h>
 #include <TCanvas.h>
 #include <TH1.h>

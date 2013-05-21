@@ -34,44 +34,58 @@ void CalcSlidePos(string fileName, int nSlidePos)
   // ROOT stuff
   TFile *rootFile = new TFile(fileName.c_str(), "UPDATE");
 	// Determine if it's an LYSO file or coincident file
-	bool coinc = false;
-	TTree *eventTree;
-	COINCEvent *cEvent = new COINCEvent();
-	LYSOEvent *lEvent= new LYSOEvent();
-	// find() returns string::npos if the argument is not found (COINC file)
-	if(fileName.find("lyso") == string::npos)
-	{
-  	eventTree = (TTree*)rootFile->Get("COINCEvents");
-  	eventTree->SetBranchAddress("event", &cEvent);
-		coinc = true;
-	}
-	else
-	{
-		eventTree = (TTree*)rootFile->Get("LYSOEvents");
-  	eventTree->SetBranchAddress("event", &lEvent);
-	}
+	TTree *eventTree = (TTree*)rootFile->Get("COINCEvents");
+	COINCEvent *event = new COINCEvent();
+	eventTree->SetBranchAddress("event", &event);
+
+	// Create the TTree for Analysis only if there isn't one already
+	TTree *posTree;
+	if((posTree = (TTree*)rootFile->Get("Analysis")) == 0)
+		posTree = new TTree("Analysis", "Analysis");
 
 	// Set the branch name depending on the number of sliding positions for clarity
 	string NPos = to_string(nSlidePos) + "Pos";
-	string tName = to_string(nSlidePos) + "Positions";
-	TTree *posTree = new TTree(tName.c_str(), tName.c_str());
 	string bName = "lercheX" + NPos;
-	posTree->Branch(bName.c_str(), &lercheXPos);
-	bName = "lercheY" + NPos;
-	posTree->Branch(bName.c_str(), &lercheYPos);
-	bName = "gaussX" + NPos;
-	posTree->Branch(bName.c_str(), &gaussXPos);
-	bName = "gaussY" + NPos;
-	posTree->Branch(bName.c_str(), &gaussYPos);
-	bName = "chi2LX" + NPos;
-	posTree->Branch(bName.c_str(), &chi2LX);
-	bName = "chi2LY" + NPos;
-	posTree->Branch(bName.c_str(), &chi2LY);
-	bName = "chi2GX" + NPos;
-	posTree->Branch(bName.c_str(), &chi2GX);
-	bName = "chi2GY" + NPos;
-	posTree->Branch(bName.c_str(), &chi2GY);
-  cout << "ROOT file loaded, tree created." << endl;
+	// Check if the branch for this analysis exists. If so, overwrite it, if not, make it
+	// Not found
+	if(posTree->FindBranch(bName.c_str()) == 0)
+	{
+		posTree->Branch(bName.c_str(), &lercheXPos);
+		bName = "lercheY" + NPos;
+		posTree->Branch(bName.c_str(), &lercheYPos);
+		bName = "gaussX" + NPos;
+		posTree->Branch(bName.c_str(), &gaussXPos);
+		bName = "gaussY" + NPos;
+		posTree->Branch(bName.c_str(), &gaussYPos);
+		bName = "chi2LX" + NPos;
+		posTree->Branch(bName.c_str(), &chi2LX);
+		bName = "chi2LY" + NPos;
+		posTree->Branch(bName.c_str(), &chi2LY);
+		bName = "chi2GX" + NPos;
+		posTree->Branch(bName.c_str(), &chi2GX);
+		bName = "chi2GY" + NPos;
+		posTree->Branch(bName.c_str(), &chi2GY);
+  	cout << "ROOT file loaded, tree created." << endl;
+	}
+	else
+	{
+		posTree->SetBranchAddress(bName.c_str(), &lercheXPos);
+		bName = "lercheY" + NPos;
+		posTree->SetBranchAddress(bName.c_str(), &lercheYPos);
+		bName = "gaussX" + NPos;
+		posTree->SetBranchAddress(bName.c_str(), &gaussXPos);
+		bName = "gaussY" + NPos;
+		posTree->SetBranchAddress(bName.c_str(), &gaussYPos);
+		bName = "chi2LX" + NPos;
+		posTree->SetBranchAddress(bName.c_str(), &chi2LX);
+		bName = "chi2LY" + NPos;
+		posTree->SetBranchAddress(bName.c_str(), &chi2LY);
+		bName = "chi2GX" + NPos;
+		posTree->SetBranchAddress(bName.c_str(), &chi2GX);
+		bName = "chi2GY" + NPos;
+		posTree->SetBranchAddress(bName.c_str(), &chi2GY);
+  	cout << "ROOT file loaded, analysis found. Values will be overwritten." << endl;
+	}
 	
 	// Fitting functions
 	TF1 fitGauss("fitGauss", "[0]*exp(-0.5*((x-[1])/[2])**2) + [3]");
@@ -85,7 +99,6 @@ void CalcSlidePos(string fileName, int nSlidePos)
 
 	TH1D hx("hx", "X Projection", 8, 0.0, 49.0);
 	TH1D hy("hy", "Y Projection", 8, 0.0, 49.0);
-	LYSOEvent *ev = new LYSOEvent();
 	int x, y;
   for(int i=0;i < eventTree->GetEntries();i++)
   {
@@ -97,18 +110,9 @@ void CalcSlidePos(string fileName, int nSlidePos)
 		// Project the charge
 		for(int k=0;k < 64;k++)
 		{
-			ev->ChanNumToXYPos(k, x, y);
-			if(coinc)
-			{
-				hx.Fill(x, cEvent->GetChargeGC().at(k));
-				hy.Fill(y, cEvent->GetChargeGC().at(k));
-			}
-			else
-			{
-				hx.Fill(x, lEvent->GetChargeGC().at(k));
-				hy.Fill(y, lEvent->GetChargeGC().at(k));
-			}
-
+			event->ChanNumToXYPos(k, x, y);
+			hx.Fill(x, event->GetChargeGC().at(k));
+			hy.Fill(y, event->GetChargeGC().at(k));
 		}
 
 		// Slide
@@ -204,9 +208,8 @@ void CalcSlidePos(string fileName, int nSlidePos)
 		posTree->Fill();
   }
   
-
-  rootFile->Write();
+	posTree->Write();
   rootFile->Close();
-  cout << "Calculated positions written to " << tName << " in " << fileName << endl;
+  cout << "Calculated positions written to Analysis tree  in " << fileName << endl;
   return;
 }
