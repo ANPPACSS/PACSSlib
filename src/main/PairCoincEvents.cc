@@ -99,7 +99,7 @@ void PairEvents(double dtWindow, string fileNameLYSO, string fileNameGE, string 
     {
       rootFile->cd();
       // Coincidence
-			event->CopyEvents(eventLYSO, eventGE);
+			event->CopyEvents(*eventLYSO, *eventGE);
 
       // Increment counters since we found coincidence
       rootFile->cd();
