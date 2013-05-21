@@ -28,17 +28,4 @@
 
 using namespace std;
 
-class PACSSEvent
-{
-	public:
-		PACSSEvent();
-		virtual ~PACSSEvent();
-
-		// Useful misc. functions
-		void	 			 	 ChanNumToXYPos(int channel, int &x, int &y);
-
-		// So ROOT can see the class
-		ClassDef(PACSSEvent, 1);
-};
-
 #endif

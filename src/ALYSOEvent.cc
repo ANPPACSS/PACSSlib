@@ -99,6 +99,16 @@ void ALYSOEvent::SetErrOutOfRange(bool newErrOutOfRange)
 	return;
 }
 
+void ALYSOEvent::ChanNumToXYPos(int channel, int &x, int &y)
+{
+  // Convert to mm: 49mm / 8 pixels = 6.125mm per pixel
+  // Assume the x,y position in mm is the middle of the pixel
+  x = 6.125*((channel % 8)+0.5);
+  y = 6.125*(floor(channel/8)+0.5);
+  return;
+}
+
+
 void ALYSOEvent::Clear()
 {
 	charge.clear();

@@ -48,6 +48,7 @@ class ALYSOEvent
 		void					 SetErrOutOfRange(bool newErrOutOfRange);
 
 		// Other useful functions
+		void					 ChanNumToXYPos(int channel, int &x, int &y);
 		void					 Clear();
 
 		ClassDef(ALYSOEvent, 1);
