@@ -1,20 +1,20 @@
-/* AGEEvent.hh
-Header for AGEEvent base class. This class is inherited by:
+/* BaseGEEvent.hh
+Header for BaseGEEvent base class. This class is inherited by:
 	1. GEEvent, which holds the SIS raw event information (no analysis)
 	2. COINCEvent, which holds the raw paired event information
 This class only contains event traits which are parsed directly from the STRUCK data file. Calculated
 values should either be made another branch of the TTree containing *Event, or another TTree entirely.
 
-NOTE: COINCEvent inherits from BOTH AGEEvent and ALYSOEvent - this means we should avoid using the same
+NOTE: COINCEvent inherits from BOTH BaseGEEvent and BaseLYSOEvent - this means we should avoid using the same
 name for attributes or member functions in these two classes!
 */
 
-#ifndef AGEEVENT_HH
-#define AGEEVENT_HH
+#ifndef BASEGEEVENT_HH
+#define BASEGEEVENT_HH
 
 #include "PACSSEvent.hh"
 
-class AGEEvent
+class BaseGEEvent
 {
 	protected:
 		double				 energyGEFirst;
@@ -29,8 +29,8 @@ class AGEEvent
 		int						 clockFreq; // We changed clock frequencies so making it an attribute is easiest
 
 	public:
-		AGEEvent();
-		virtual ~AGEEvent();
+		BaseGEEvent();
+		virtual ~BaseGEEvent();
 
 		// Getter functions
 		double				 GetEnergyGE();
@@ -60,7 +60,7 @@ class AGEEvent
 		void					 Clear();
 
 		// For ROOT
-		ClassDef(AGEEvent, 1);
+		ClassDef(BaseGEEvent, 1);
 };
 
 #endif

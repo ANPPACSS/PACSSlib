@@ -1,36 +1,36 @@
-/* AGEEvent.cc
-Implementation source file for AGEEvent base class. See AGEEvent.hh for details.
+/* BaseGEEvent.cc
+Implementation source file for BaseGEEvent base class. See BaseGEEvent.hh for details.
 */
-#include "AGEEvent.hh"
+#include "BaseGEEvent.hh"
 
-ClassImp(AGEEvent)
+ClassImp(BaseGEEvent)
 
-AGEEvent::AGEEvent()
+BaseGEEvent::BaseGEEvent()
 {
 	Clear();
 }
 
-AGEEvent::~AGEEvent()
+BaseGEEvent::~BaseGEEvent()
 {
 	// Does nothing
 }
 
-double AGEEvent::GetEnergyGE()
+double BaseGEEvent::GetEnergyGE()
 {
 	return energyGE;
 }
 
-double AGEEvent::GetEnergyGEMax()
+double BaseGEEvent::GetEnergyGEMax()
 {
 	return energyGEMax;
 }
 
-double AGEEvent::GetEnergyGEFirst()
+double BaseGEEvent::GetEnergyGEFirst()
 {
 	return energyGEFirst;
 }
 
-double AGEEvent::GetTimestampGE(bool inNanoSecs)
+double BaseGEEvent::GetTimestampGE(bool inNanoSecs)
 {
 	if(inNanoSecs)
 		return timestampGENS;
@@ -38,50 +38,50 @@ double AGEEvent::GetTimestampGE(bool inNanoSecs)
 		return timestampGE;
 }
 
-vector<double> AGEEvent::GetWFRaw()
+vector<double> BaseGEEvent::GetWFRaw()
 {
 	return wfRaw;
 }
 
-vector<double> AGEEvent::GetWFEnergy()
+vector<double> BaseGEEvent::GetWFEnergy()
 {
 	return wfEnergy;
 }
 
-vector<double> AGEEvent::GetWFDiff()
+vector<double> BaseGEEvent::GetWFDiff()
 {
 	return wfDiff;
 }
 
-int AGEEvent::GetChannel()
+int BaseGEEvent::GetChannel()
 {
 	return channel;
 }
 
-int AGEEvent::GetClockFreq()
+int BaseGEEvent::GetClockFreq()
 {
 	return clockFreq;
 }
 
-void AGEEvent::SetEnergyGE(double newEnergy)
+void BaseGEEvent::SetEnergyGE(double newEnergy)
 {
 	energyGE = newEnergy;
 	return;
 }
 
-void AGEEvent::SetEnergyGEMax(double newEnergyMax)
+void BaseGEEvent::SetEnergyGEMax(double newEnergyMax)
 {
 	energyGEMax = newEnergyMax;
 	return;
 }
 
-void AGEEvent::SetEnergyGEFirst(double newEnergyFirst)
+void BaseGEEvent::SetEnergyGEFirst(double newEnergyFirst)
 {
 	energyGEFirst = newEnergyFirst;
 	return;
 }
 
-void AGEEvent::SetTimestampGE(double newTimestamp, bool inNanoSecs)
+void BaseGEEvent::SetTimestampGE(double newTimestamp, bool inNanoSecs)
 {
 	if(inNanoSecs)
 		timestampGENS = newTimestamp;
@@ -90,37 +90,37 @@ void AGEEvent::SetTimestampGE(double newTimestamp, bool inNanoSecs)
 	return;
 }
 
-void AGEEvent::SetWFRaw(vector<double> newWFRaw)
+void BaseGEEvent::SetWFRaw(vector<double> newWFRaw)
 {
 	wfRaw = newWFRaw;
 	return;
 }
 
-void AGEEvent::SetWFEnergy(vector<double> newWFEnergy)
+void BaseGEEvent::SetWFEnergy(vector<double> newWFEnergy)
 {
 	wfEnergy = newWFEnergy;
 	return;
 }
 
-void AGEEvent::SetWFDiff(vector<double> newWFDiff)
+void BaseGEEvent::SetWFDiff(vector<double> newWFDiff)
 {
 	wfDiff = newWFDiff;
 	return;
 }
 
-void AGEEvent::SetChannel(int newChannel)
+void BaseGEEvent::SetChannel(int newChannel)
 {
 	channel = newChannel;
 	return;
 }
 
-void AGEEvent::SetClockFreq(int newClockFreq)
+void BaseGEEvent::SetClockFreq(int newClockFreq)
 {
 	clockFreq = newClockFreq;
 	return;
 }
 
-/*void AGEEvent::CalcT1ToT2Time(double fracA, double fracB, int &nTime, bool inNanoSecs)
+/*void BaseGEEvent::CalcT1ToT2Time(double fracA, double fracB, int &nTime, bool inNanoSecs)
 {
 	// Make sure there is a waveform
 	if(wfRaw.size() == 0)
@@ -162,7 +162,7 @@ void AGEEvent::SetClockFreq(int newClockFreq)
   return;
 }*/
 
-void AGEEvent::Clear()
+void BaseGEEvent::Clear()
 {
 	timestampGE = 0.0;
 	energyGE = 0.0;
