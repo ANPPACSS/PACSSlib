@@ -48,7 +48,7 @@ class BaseLYSOEvent
 		void					 SetErrOutOfRange(bool newErrOutOfRange);
 
 		// Other useful functions
-		void					 ChanNumToXYPos(int channel, int &x, int &y);
+		void		 			 ChanNumToXYPos(int channel, int &x, int &y);
 		void					 ClearEvent();
 
 		ClassDef(BaseLYSOEvent, 1);
