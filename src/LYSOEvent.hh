@@ -6,9 +6,9 @@ from TObject, which is required for ROOT I/O.
 #ifndef LYSOEVENT_HH
 #define LYSOEVENT_HH
 
-#include "ALYSOEvent.hh"
+#include "BaseLYSOEvent.hh"
 
-class LYSOEvent: public ALYSOEvent, public TObject
+class LYSOEvent: public BaseLYSOEvent, public TObject
 {
 	protected:
 

@@ -1,19 +1,19 @@
-/* ALYSOEvent.hh
-Header for ALYSOEvent base class. This class is inherited by:
+/* BaseLYSOEvent.hh
+Header for BaseLYSOEvent base class. This class is inherited by:
   1. LYSOEvent, which holds the Vertilon raw event information (no analysis)
 	2. COINCEvent, which holds the raw paired event information
 This class only contains event traits which are parsed directly from the Vertilon log file. Calculated
 values should either be made another branch of the TTree containing *Event, or another TTree entirely.
 
-NOTE: COINCEvent inherits from BOTH AGEEvent and ALYSOEvent - this means we should avoid using the same
+NOTE: COINCEvent inherits from BOTH BaseGEEvent and BaseLYSOEvent - this means we should avoid using the same
 name for attributes or member functions in these two classes!
 */
-#ifndef ALYSOEVENT_HH
-#define ALYSOEVENT_HH
+#ifndef BASELYSOEVENT_HH
+#define BASELYSOEVENT_HH
 
 #include "PACSSEvent.hh"
 
-class ALYSOEvent
+class BaseLYSOEvent
 {
 	protected:
 		vector<double> charge;
@@ -26,8 +26,8 @@ class ALYSOEvent
 		bool					 errOutOfRange;
 
 	public:
-		ALYSOEvent();
-		virtual ~ALYSOEvent();
+		BaseLYSOEvent();
+		virtual ~BaseLYSOEvent();
 
 		// Getter functions
 		vector<double> GetCharge();
@@ -51,7 +51,7 @@ class ALYSOEvent
 		void					 ChanNumToXYPos(int channel, int &x, int &y);
 		void					 Clear();
 
-		ClassDef(ALYSOEvent, 1);
+		ClassDef(BaseLYSOEvent, 1);
 };
 
 #endif

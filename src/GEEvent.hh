@@ -6,9 +6,9 @@ from TObject, which is required for ROOT I/O.
 #ifndef GEEVENT_HH
 #define GEEVENT_HH
 
-#include "AGEEvent.hh"
+#include "BaseGEEvent.hh"
 
-class GEEvent: public AGEEvent, public TObject
+class GEEvent: public BaseGEEvent, public TObject
 {
 	protected:
 
