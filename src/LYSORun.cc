@@ -83,21 +83,11 @@ void LYSORun::PlotEnergyHist()
 
 	TH1D *hEnergy = new TH1D("hEnergy", "LYSO Energy", 2068, -10.0, 1023.0);
 
-	for(int i=0;i < numEvents;i++)
-	{
-		double energy = GetEvent(i)->GetEnergy();
-		hEnergy->Fill(energy);
-
-		if(i % reportFreq == 0)
-		{
-			cout << "Processing event " << i << " with energy " << energy;
-			cout << "." << endl;
-		}
-	}
+	eventTree->Draw("energyLYSOGC >> hEnergy", "", "NBQ");
 
 	hEnergy->Draw();
 	hEnergy->GetXaxis()->SetTitle("Energy (pC)");
 	hEnergy->GetYaxis()->SetTitle("Counts");
-	hEnergy->SetFillColor(kRed);
+	hEnergy->SetFillColor(kBlue);
 	return;
 }

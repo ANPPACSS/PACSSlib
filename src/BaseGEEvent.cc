@@ -7,7 +7,7 @@ ClassImp(BaseGEEvent)
 
 BaseGEEvent::BaseGEEvent()
 {
-	Clear();
+	ClearEvent();
 }
 
 BaseGEEvent::~BaseGEEvent()
@@ -162,7 +162,7 @@ void BaseGEEvent::SetClockFreq(int newClockFreq)
   return;
 }*/
 
-void BaseGEEvent::Clear()
+void BaseGEEvent::ClearEvent()
 {
 	timestampGE = 0.0;
 	energyGE = 0.0;

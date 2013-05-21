@@ -8,7 +8,7 @@ ParseLYSO::ParseLYSO()
 }
 
 // Member function definitions
-ParseLYSO::ParseLYSO(string newInFileName, string newOutFileName, int nPositions)
+ParseLYSO::ParseLYSO(string newInFileName, string newOutFileName)
 {
   inFileName = newInFileName;
   outFileName = newOutFileName;
@@ -25,7 +25,6 @@ ParseLYSO::ParseLYSO(string newInFileName, string newOutFileName, int nPositions
   nInputError = 0;
   nOutOfRange = 0;
   error = false;
-	numSlidePositions = nPositions;
 	gainCorrect.clear();
 
   // Start by opening the files
@@ -44,18 +43,18 @@ ParseLYSO::~ParseLYSO()
 
 void ParseLYSO::OpenLYSOFile()
 {
-// Open the file as binary
+  // Open the file as binary
   inFile.open(inFileName.c_str(), ios::binary);
 
-    // Make sure we opened it
-      if(!inFile.good())
-      {
-        cout << "Failed to open the LYSO data file." << endl;
-        error = true;
-        return;
-      }
-      else
-        cout << "LYSO data file opened." << endl;
+  // Make sure we opened it
+  if(!inFile.good())
+  {
+    cout << "Failed to open the LYSO data file." << endl;
+    error = true;
+    return;
+  }
+  else
+    cout << "LYSO data file opened." << endl;
 
   // Determine how many events there are. Get the file size in bytes and divide
   // by the number of words we expect
@@ -99,7 +98,7 @@ void ParseLYSO::LoadGainCorrection()
 	ifstream gainFile;
 	string buf;
 
-	gainFile.open("/home/micah/PACSS/PACSSlib/src/gaincorr.txt");
+	gainFile.open("/PACSS/gaincorr.txt");
 
 	if(!gainFile.good())
 	{
@@ -152,7 +151,6 @@ void ParseLYSO::ReadEvent()
 
   // Clear out the values in the current event object
   event->Clear();
-	event->SetNSlidePos(numSlidePositions);
 
   // Each event is: one header word
   //                NUM_LYSO_PIXELS words containing charge values
@@ -170,16 +168,11 @@ void ParseLYSO::ReadEvent()
     nOutOfRange++;
   }
 
-	// Projection histograms - project only once per event and pass to the fitting algorithms
-	TH1D *hProjX = new TH1D("hProjX", "", 8, 0.0, 49.0);
-	TH1D *hProjY = new TH1D("hProjY", "", 8, 0.0, 49.0);
-
   // Read in the charge values
   vector<double> chargeVect;
 	vector<double> chargeGCVect;
   chargeVect.clear();
 	chargeGCVect.clear();
-	int x, y;
   for(int i=0;i < NUM_LYSO_PIXELS;i++)
   {
     ReadWord();
@@ -193,13 +186,8 @@ void ParseLYSO::ReadEvent()
 		chargeGCVect.push_back(chargeGC);
 
     // Add to the energy (sum charge)
-    event->SetEnergy(event->GetEnergy() + charge);
-		event->SetEnergyGC(event->GetEnergyGC() + chargeGC);
-
-		// Add the value to the projection
-    event->ChanNumToXYPos(i, x, y);
-    hProjX->Fill(x, chargeGC);
-    hProjY->Fill(y, chargeGC);
+    event->SetEnergyLYSO(event->GetEnergyLYSO() + charge);
+		event->SetEnergyLYSOGC(event->GetEnergyLYSOGC() + chargeGC);
   }
   event->SetCharge(chargeVect);
 	event->SetChargeGC(chargeGCVect);
@@ -223,8 +211,8 @@ void ParseLYSO::ReadEvent()
     lastVertTimestamp = currTimestamp;
     // Don't forget to convert to nanoseconds!
 		lastRealTimestamp += resetOffset;
-    event->SetTimestamp((double)lastRealTimestamp, false);
-		event->SetTimestamp((double)(lastRealTimestamp*CLOCK_MULT_LYSO), true);
+    event->SetTimestampLYSO((double)lastRealTimestamp, false);
+		event->SetTimestampLYSO((double)(lastRealTimestamp*CLOCK_MULT_LYSO), true);
   }
   // No clock reset - just add the time since the last event
   else
@@ -232,17 +220,11 @@ void ParseLYSO::ReadEvent()
     // Don't forget to convert to nanoseconds!
     //uint64_t realTimestamp = (uint64_t)(currTimestamp - lastVertTimestamp) + lastRealTimestamp;
     lastRealTimestamp += (uint64_t)(currTimestamp - lastVertTimestamp);
-		event->SetTimestamp((double)lastRealTimestamp, false);
-		event->SetTimestamp((double)(lastRealTimestamp*CLOCK_MULT_LYSO), true);
+		event->SetTimestampLYSO((double)lastRealTimestamp, false);
+		event->SetTimestampLYSO((double)(lastRealTimestamp*CLOCK_MULT_LYSO), true);
     lastVertTimestamp = currTimestamp;
   }
 
-	event->CalcXYPosition(hProjX, hProjY);
-	//event->CalcGaussXYPos(hProjX, hProjY);
-	//event->CalcLercheXYPos(hProjX, hProjY);
-	delete hProjX;
-	delete hProjY;
-  // All done with that event
   return;
 }
 
@@ -273,10 +255,7 @@ bool ParseLYSO::ReadAllEvents()
     if(numCurrEvent % 1000 == 0)
 		{
         cout << "Processing event " << numCurrEvent << ": ";
-				cout << "E= " << event->GetEnergy() << ", ";
-				cout << "SG(" << event->GetGaussSXPos() << "," << event->GetGaussSYPos();
-				cout << "); LP(" << event->GetLercheXPos() << ",";
-				cout << event->GetLercheYPos() << ")" << endl;
+				cout << "E= " << event->GetEnergyLYSOGC() << ", ";
 				cout << endl;
 		}
   }

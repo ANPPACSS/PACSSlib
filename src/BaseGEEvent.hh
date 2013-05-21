@@ -57,7 +57,7 @@ class BaseGEEvent
 		//void					 CalcT1ToT2Time(double fracA, double fracB, int &nTime, bool inNanoSecs=false);
 
 		// Other useful functions
-		void					 Clear();
+		void					 ClearEvent();
 
 		// For ROOT
 		ClassDef(BaseGEEvent, 1);

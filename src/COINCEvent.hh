@@ -13,7 +13,7 @@ class COINCEvent: public BaseGEEvent, public BaseLYSOEvent, public TObject
 	public:
 		COINCEvent();
 		// Use default copy constructors - the classes have simple attributes
-		COINCEvent(LYSOEvent *newLYSO, GEEvent *newGE); 
+		COINCEvent(LYSOEvent &newLYSO, GEEvent &newGE); 
 		virtual ~COINCEvent();
 
 		void		 			 CopyEvents(LYSOEvent *newLYSO, GEEvent *newGE);

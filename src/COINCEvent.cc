@@ -8,7 +8,7 @@ COINCEvent::COINCEvent()
 }
 
 // Construct using the events
-COINCEvent::COINCEvent(LYSOEvent *newLYSO, GEEvent *newGE): BaseGEEvent(newGE), BaseLYSOEvent(newLYSO)
+COINCEvent::COINCEvent(LYSOEvent &newLYSO, GEEvent &newGE): BaseGEEvent(newGE), BaseLYSOEvent(newLYSO)
 {
 }
 
@@ -46,9 +46,9 @@ void COINCEvent::CopyEvents(LYSOEvent *newLYSO, GEEvent *newGE)
 void COINCEvent::Clear()
 {
 	// Clear the LYSO attributes
-	BaseLYSOEvent::Clear();
+	BaseLYSOEvent::ClearEvent();
 	// Clear the GE attributes
-	BaseGEEvent::Clear();
+	BaseGEEvent::ClearEvent();
 	
 	return;
 }

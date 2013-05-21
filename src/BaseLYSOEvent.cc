@@ -1,41 +1,41 @@
-/* ALYSOEvent.cc
-Implementation source file for ALYSOEvent base class. See ALYSOEvent.hh for details.
+/* BaseLYSOEvent.cc
+Implementation source file for BaseLYSOEvent base class. See BaseLYSOEvent.hh for details.
 */
-#include "ALYSOEvent.hh"
+#include "BaseLYSOEvent.hh"
 
-ClassImp(ALYSOEvent)
+ClassImp(BaseLYSOEvent)
 
-ALYSOEvent::ALYSOEvent()
+BaseLYSOEvent::BaseLYSOEvent()
 {
-	Clear();
+	ClearEvent();
 }
 
-ALYSOEvent::~ALYSOEvent()
+BaseLYSOEvent::~BaseLYSOEvent()
 {
 	// Does nothing
 }
 
-vector<double> ALYSOEvent::GetCharge()
+vector<double> BaseLYSOEvent::GetCharge()
 {
 	return charge;
 }
 
-vector<double> ALYSOEvent::GetChargeGC()
+vector<double> BaseLYSOEvent::GetChargeGC()
 {
 	return chargeGC;
 }
 
-double ALYSOEvent::GetEnergyLYSO()
+double BaseLYSOEvent::GetEnergyLYSO()
 {
 	return energyLYSO;
 }
 
-double ALYSOEvent::GetEnergyLYSOGC()
+double BaseLYSOEvent::GetEnergyLYSOGC()
 {
 	return energyLYSOGC;
 }
 
-double ALYSOEvent::GetTimestampLYSO(bool inNanoSecs)
+double BaseLYSOEvent::GetTimestampLYSO(bool inNanoSecs)
 {
 	if(inNanoSecs)
 		return timestampLYSONS;
@@ -43,63 +43,62 @@ double ALYSOEvent::GetTimestampLYSO(bool inNanoSecs)
 		return timestampLYSO;
 }
 
-bool ALYSOEvent::ErrInput()
+bool BaseLYSOEvent::ErrInput()
 {
 	return errInput;
 }
 
-bool ALYSOEvent::ErrOutOfRange()
+bool BaseLYSOEvent::ErrOutOfRange()
 {
 	return errOutOfRange;
 }
 
-void ALYSOEvent::SetCharge(vector<double> newCharge)
+void BaseLYSOEvent::SetCharge(vector<double> newCharge)
 {
 	charge = newCharge;
 	return;
 }
 
-void ALYSOEvent::SetChargeGC(vector<double> newChargeGC)
+void BaseLYSOEvent::SetChargeGC(vector<double> newChargeGC)
 {
 	chargeGC = newChargeGC;
 	return;
 }
 
-void ALYSOEvent::SetEnergyLYSO(double newEnergy)
+void BaseLYSOEvent::SetEnergyLYSO(double newEnergy)
 {
 	energyLYSO = newEnergy;
 	return;
 }
 
-void ALYSOEvent::SetEnergyLYSOGC(double newEnergyGC)
+void BaseLYSOEvent::SetEnergyLYSOGC(double newEnergyGC)
 {
 	energyLYSOGC = newEnergyGC;
 	return;
 }
 
-
-void ALYSOEvent::SetTimestampLYSO(double newTimestamp, bool inNanoSecs)
+void BaseLYSOEvent::SetTimestampLYSO(double newTimestampNS, bool inNanoSecs)
 {
 	if(inNanoSecs)
-		timestampLYSONS = newTimestamp;
+		timestampLYSONS = newTimestampNS;
 	else
-		timestampLYSO = newTimestamp;
+		timestampLYSO = newTimestampNS;
 	return;
 }
 
-void ALYSOEvent::SetErrInput(bool newErrInput)
+void BaseLYSOEvent::SetErrInput(bool newErrInput)
 {
 	errInput = newErrInput;
 	return;
 }
 
-void ALYSOEvent::SetErrOutOfRange(bool newErrOutOfRange)
+void BaseLYSOEvent::SetErrOutOfRange(bool newErrOutOfRange)
 {
 	errOutOfRange = newErrOutOfRange;
 	return;
 }
 
-void ALYSOEvent::ChanNumToXYPos(int channel, int &x, int &y)
+void BaseLYSOEvent::ChanNumToXYPos(int channel, int &x, int &y)
 {
   // Convert to mm: 49mm / 8 pixels = 6.125mm per pixel
   // Assume the x,y position in mm is the middle of the pixel
@@ -108,8 +107,7 @@ void ALYSOEvent::ChanNumToXYPos(int channel, int &x, int &y)
   return;
 }
 
-
-void ALYSOEvent::Clear()
+void BaseLYSOEvent::ClearEvent()
 {
 	charge.clear();
 	chargeGC.clear();

@@ -49,7 +49,7 @@ class BaseLYSOEvent
 
 		// Other useful functions
 		void					 ChanNumToXYPos(int channel, int &x, int &y);
-		void					 Clear();
+		void					 ClearEvent();
 
 		ClassDef(BaseLYSOEvent, 1);
 };

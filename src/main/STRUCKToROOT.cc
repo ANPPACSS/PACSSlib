@@ -4,7 +4,7 @@ int main(int argc, char *argv[])
 {
   string inFileName;
   string outFileName;
-	int clockMult;
+	int clockFreq;
   bool error = false;
 	ParseGE *parseGE;
 
@@ -14,9 +14,9 @@ int main(int argc, char *argv[])
     case 4:
       inFileName = (string)argv[1];
       outFileName = (string)argv[2];
-			clockMult = atoi(argv[3]);
+			clockFreq = atoi(argv[3]);
       cout << "Beginning STRUCK data file parse." << endl;
-  		parseGE = new ParseGE(inFileName, outFileName, clockMult);
+  		parseGE = new ParseGE(inFileName, outFileName, clockFreq);
       break;
 		case 3:
 			inFileName = (string)argv[1];
@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
 			break;
     default:
       cout << "Usage: " << argv[0] << " [STRUCK .log file] ";
-      cout << "[.root file] [clock multiplier (default=10 for 100 MHz)]" << endl;
+      cout << "[.root file] [clock frequency (default=100MHz)]" << endl;
       error = true;
       return 1;
   }
