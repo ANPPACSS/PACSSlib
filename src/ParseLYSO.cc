@@ -150,7 +150,7 @@ void ParseLYSO::ReadEvent()
   outOfRange = false;
 
   // Clear out the values in the current event object
-  event->Clear();
+  event->ClearEvent();
 
   // Each event is: one header word
   //                NUM_LYSO_PIXELS words containing charge values
@@ -252,7 +252,7 @@ bool ParseLYSO::ReadAllEvents()
       eventTree->Fill();
       nFilled++;
     }
-    if(numCurrEvent % 1000 == 0)
+    if(numCurrEvent % 10000 == 0)
 		{
         cout << "Processing event " << numCurrEvent << ": ";
 				cout << "E= " << event->GetEnergyLYSOGC() << ", ";

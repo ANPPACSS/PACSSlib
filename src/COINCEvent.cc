@@ -7,7 +7,8 @@ COINCEvent::COINCEvent()
 	Clear();
 }
 
-// Construct using the events
+// Construct using the events - uses default constructors of both (since LYSOEvent and GEEvent
+// inherit from the bases)
 COINCEvent::COINCEvent(LYSOEvent &newLYSO, GEEvent &newGE): BaseGEEvent(newGE), BaseLYSOEvent(newLYSO)
 {
 }
@@ -29,6 +30,8 @@ void COINCEvent::CopyEvents(LYSOEvent *newLYSO, GEEvent *newGE)
 	energyLYSOGC = newLYSO->GetEnergyLYSOGC();
 	timestampLYSO = newLYSO->GetTimestampLYSO(false);
 	timestampLYSONS = newLYSO->GetTimestampLYSO(true);
+	errInput = newLYSO->ErrInput();
+	errOutOfRange = newLYSO->ErrOutOfRange();
 
 	// Copy the GE attributes
 	energyGE = newGE->GetEnergyGE();
