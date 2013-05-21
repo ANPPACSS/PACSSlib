@@ -32,7 +32,6 @@ class ParseLYSO
     int        nInputError;
     bool       outOfRange;
     int        nOutOfRange;
-		int				 numSlidePositions;
 		vector<double> gainCorrect;
 
     // File handling functions
@@ -50,7 +49,7 @@ class ParseLYSO
     bool       error;
 
 		ParseLYSO();
-		ParseLYSO(string newInFileName, string newOutFileName, int nPositions);
+		ParseLYSO(string newInFileName, string newOutFileName);
     virtual ~ParseLYSO();
 
     // ParseLYSO has one purpose!

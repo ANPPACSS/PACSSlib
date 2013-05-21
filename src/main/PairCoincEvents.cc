@@ -60,8 +60,8 @@ void PairEvents(double dtWindow, string fileNameLYSO, string fileNameGE, string 
 		numEvents = runLYSO->GetNumEvents();
 
   // Get the offset for subtraction, in ns
-  startLYSO = eventLYSO->GetTimestamp(true);
-  startGE = eventGE->GetTimestamp(true);
+  startLYSO = eventLYSO->GetTimestampLYSO(true);
+  startGE = eventGE->GetTimestampGE(true);
 
   cout << "First timestamps: " << startLYSO << " " << startGE << endl;
 
@@ -85,8 +85,8 @@ void PairEvents(double dtWindow, string fileNameLYSO, string fileNameGE, string 
 		}
 
     // Get a set of timestamps, convert to ns and subtract offset
-    double timeLYSO = eventLYSO->GetTimestamp(true)-startLYSO;
-    double timeGE = eventGE->GetTimestamp(true)-startGE;
+    double timeLYSO = eventLYSO->GetTimestampLYSO(true)-startLYSO;
+    double timeGE = eventGE->GetTimestampGE(true)-startGE;
 		//cout << "Attempting to pair :: iLYSO=" << iLYSO << ", t=" << timeLYSO;
 		//cout << "; iGE=" << iGE << ", t=" << timeGE << endl;
 
@@ -109,16 +109,16 @@ void PairEvents(double dtWindow, string fileNameLYSO, string fileNameGE, string 
       nFilled++;
     }
 		// Try the next LYSO event
-		else if(fabs((runLYSO->GetEvent(iLYSO+1)->GetTimestamp(true)-startLYSO)-timeGE) < dtWindow)
+		else if(fabs((runLYSO->GetEvent(iLYSO+1)->GetTimestampLYSO(true)-startLYSO)-timeGE) < dtWindow)
 			iLYSO++;
 		// Try 2 LYSO events from here
-		else if(fabs((runLYSO->GetEvent(iLYSO+2)->GetTimestamp(true)-startLYSO)-timeGE) < dtWindow)
+		else if(fabs((runLYSO->GetEvent(iLYSO+2)->GetTimestampLYSO(true)-startLYSO)-timeGE) < dtWindow)
 			iLYSO += 2;
 		// Try the next GE event
-		else if(fabs((runGE->GetEvent(iGE+1)->GetTimestamp(true)-startGE)-timeLYSO) < dtWindow)
+		else if(fabs((runGE->GetEvent(iGE+1)->GetTimestampGE(true)-startGE)-timeLYSO) < dtWindow)
 			iGE++;
 		// Try 2 GE events from here
-		else if(fabs((runGE->GetEvent(iGE+2)->GetTimestamp(true)-startGE)-timeLYSO) < dtWindow)
+		else if(fabs((runGE->GetEvent(iGE+2)->GetTimestampGE(true)-startGE)-timeLYSO) < dtWindow)
 			iGE += 2;
 		// Can't find a pair, skip em both
 		else

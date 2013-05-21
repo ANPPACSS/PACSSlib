@@ -12,6 +12,7 @@
 #include <TROOT.h>
 #include <TFile.h>
 #include <TTree.h>
+#include <TBranch.h>
 #include <TObject.h>
 #include <TCanvas.h>
 #include <TH1.h>
@@ -27,18 +28,5 @@
 #define GE_RAW_WF_LEN  1500   // Number of samples in raw GE trace
 
 using namespace std;
-
-class PACSSEvent
-{
-	public:
-		PACSSEvent();
-		virtual ~PACSSEvent();
-
-		// Useful misc. functions
-		void	 			 	 ChanNumToXYPos(int channel, int &x, int &y);
-
-		// So ROOT can see the class
-		ClassDef(PACSSEvent, 1);
-};
 
 #endif

@@ -4,16 +4,14 @@ int main(int argc, char *argv[])
 {
   string inFileName;
   string outFileName;
-	int numRegions;
   bool error = false;
 
   // Handle the command line arguments
   switch(argc)
   {
-		case 4:
+		case 3:
       inFileName = (string)argv[1];
       outFileName = (string)argv[2];
-			numRegions = atoi(argv[3]);
       cout << "Beginning Vertilon data file parse." << endl;
       break;
     default:
@@ -23,7 +21,7 @@ int main(int argc, char *argv[])
       return 1;
   }
 
-	ParseLYSO *parseLYSO = new ParseLYSO(inFileName, outFileName, numRegions);
+	ParseLYSO *parseLYSO = new ParseLYSO(inFileName, outFileName);
   error = parseLYSO->ReadAllEvents();
   delete parseLYSO;
 

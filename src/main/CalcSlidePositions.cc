@@ -2,51 +2,90 @@
 #include "../LYSORun.hh"
 #include "../GERun.hh"
 
-void CalcSlidePos(string fileNameCOINC, int nSlidePos);
+void CalcSlidePos(string fileName, int nSlidePos);
 
 int main(int argc, char *argv[])
 {
-	string fileNameCOINC;
+	string fileName;
   int nSlidePos;
 
   // Handle the command line arguments
   switch(argc)
   {
     case 3:
-			fileNameCOINC = (string)argv[1];
+			fileName = (string)argv[1];
       nSlidePos = atoi(argv[2]);
       cout << "Calculating Gauss & Lerche slide positions with " << nSlidePos << " positions." << endl;
       break;
     default:
-      cout << "Usage: " << argv[0] << " [COINC ROOT file] [n positions]" << endl;
+      cout << "Usage: " << argv[0] << " [COINC or LYSO ROOT file] [n positions]" << endl;
       return 1;
   }
 
-  CalcSlidePos(fileNameCOINC, nSlidePos);
+  CalcSlidePos(fileName, nSlidePos);
 
   return 0;
 }
 
-void CalcSlidePos(string fileNameCOINC, int nSlidePos)
+void CalcSlidePos(string fileName, int nSlidePos)
 {
 	double lercheXPos, lercheYPos, gaussXPos, gaussYPos;
 	vector<double> chi2LX, chi2LY, chi2GX, chi2GY;
   // ROOT stuff
-  TFile *rootFile = new TFile(fileNameCOINC.c_str(), "UPDATE");
-  TTree *eventTree = (TTree*)rootFile->Get("COINCEvents");
-  COINCEvent *event = new COINCEvent();
-  eventTree->SetBranchAddress("event", &event);
-	string tName = to_string(nSlidePos) + "Positions";
-	TTree *posTree = new TTree(tName.c_str(), tName.c_str());
-	posTree->Branch("lercheX98Pos", &lercheXPos);
-	posTree->Branch("lercheY98Pos", &lercheYPos);
-	posTree->Branch("gaussX98Pos", &gaussXPos);
-	posTree->Branch("gaussY98Pos", &gaussYPos);
-	posTree->Branch("chi2LX98Pos", &chi2LX);
-	posTree->Branch("chi2LY98Pos", &chi2LY);
-	posTree->Branch("chi2GX98Pos", &chi2GX);
-	posTree->Branch("chi2GY98Pos", &chi2GY);
-  cout << "ROOT file loaded, tree created." << endl;
+  TFile *rootFile = new TFile(fileName.c_str(), "UPDATE");
+	// Determine if it's an LYSO file or coincident file
+	TTree *eventTree = (TTree*)rootFile->Get("COINCEvents");
+	COINCEvent *event = new COINCEvent();
+	eventTree->SetBranchAddress("event", &event);
+
+	// Create the TTree for Analysis only if there isn't one already
+	TTree *posTree;
+	if((posTree = (TTree*)rootFile->Get("Analysis")) == 0)
+		posTree = new TTree("Analysis", "Analysis");
+
+	// Set the branch name depending on the number of sliding positions for clarity
+	string NPos = to_string(nSlidePos) + "Pos";
+	string bName = "lercheX" + NPos;
+	// Check if the branch for this analysis exists. If so, overwrite it, if not, make it
+	// Not found
+	if(posTree->FindBranch(bName.c_str()) == 0)
+	{
+		posTree->Branch(bName.c_str(), &lercheXPos);
+		bName = "lercheY" + NPos;
+		posTree->Branch(bName.c_str(), &lercheYPos);
+		bName = "gaussX" + NPos;
+		posTree->Branch(bName.c_str(), &gaussXPos);
+		bName = "gaussY" + NPos;
+		posTree->Branch(bName.c_str(), &gaussYPos);
+		bName = "chi2LX" + NPos;
+		posTree->Branch(bName.c_str(), &chi2LX);
+		bName = "chi2LY" + NPos;
+		posTree->Branch(bName.c_str(), &chi2LY);
+		bName = "chi2GX" + NPos;
+		posTree->Branch(bName.c_str(), &chi2GX);
+		bName = "chi2GY" + NPos;
+		posTree->Branch(bName.c_str(), &chi2GY);
+  	cout << "ROOT file loaded, tree created." << endl;
+	}
+	else
+	{
+		posTree->SetBranchAddress(bName.c_str(), &lercheXPos);
+		bName = "lercheY" + NPos;
+		posTree->SetBranchAddress(bName.c_str(), &lercheYPos);
+		bName = "gaussX" + NPos;
+		posTree->SetBranchAddress(bName.c_str(), &gaussXPos);
+		bName = "gaussY" + NPos;
+		posTree->SetBranchAddress(bName.c_str(), &gaussYPos);
+		bName = "chi2LX" + NPos;
+		posTree->SetBranchAddress(bName.c_str(), &chi2LX);
+		bName = "chi2LY" + NPos;
+		posTree->SetBranchAddress(bName.c_str(), &chi2LY);
+		bName = "chi2GX" + NPos;
+		posTree->SetBranchAddress(bName.c_str(), &chi2GX);
+		bName = "chi2GY" + NPos;
+		posTree->SetBranchAddress(bName.c_str(), &chi2GY);
+  	cout << "ROOT file loaded, analysis found. Values will be overwritten." << endl;
+	}
 	
 	// Fitting functions
 	TF1 fitGauss("fitGauss", "[0]*exp(-0.5*((x-[1])/[2])**2) + [3]");
@@ -60,7 +99,6 @@ void CalcSlidePos(string fileNameCOINC, int nSlidePos)
 
 	TH1D hx("hx", "X Projection", 8, 0.0, 49.0);
 	TH1D hy("hy", "Y Projection", 8, 0.0, 49.0);
-	LYSOEvent *ev = new LYSOEvent();
 	int x, y;
   for(int i=0;i < eventTree->GetEntries();i++)
   {
@@ -72,7 +110,7 @@ void CalcSlidePos(string fileNameCOINC, int nSlidePos)
 		// Project the charge
 		for(int k=0;k < 64;k++)
 		{
-			ev->ChanNumToXYPos(k, x, y);
+			event->ChanNumToXYPos(k, x, y);
 			hx.Fill(x, event->GetChargeGC().at(k));
 			hy.Fill(y, event->GetChargeGC().at(k));
 		}
@@ -170,9 +208,8 @@ void CalcSlidePos(string fileNameCOINC, int nSlidePos)
 		posTree->Fill();
   }
   
-
-  rootFile->Write();
+	posTree->Write();
   rootFile->Close();
-  cout << "Calculated positions written to " << tName << " in " << fileNameCOINC << endl;
+  cout << "Calculated positions written to Analysis tree  in " << fileName << endl;
   return;
 }

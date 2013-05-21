@@ -8,7 +8,7 @@ ParseGE::ParseGE()
 	// Parameterless constructor, for ROOT. Not used.
 }
 
-ParseGE::ParseGE(string newInFileName, string newOutFileName, int clockMult)
+ParseGE::ParseGE(string newInFileName, string newOutFileName, int clockFreq)
 {
   inFileName = newInFileName;
   outFileName = newOutFileName;
@@ -27,7 +27,7 @@ ParseGE::ParseGE(string newInFileName, string newOutFileName, int clockMult)
   doneReading = false;
 	rawWrap = false;
 	rawStartIndex = 0;
-	clockMultiplier = clockMult;
+	this->clockFreq = clockFreq;
 
   OpenGEFile();
   OpenROOTFile();
@@ -193,7 +193,10 @@ void ParseGE::ReadEventBufferHeader()
 void ParseGE::ReadSingleEvent()
 {
   // Clear the event
-  event->Clear();
+  event->ClearEvent();
+
+	// Get the clock frequency
+	event->SetClockFreq(clockFreq);
 
   // First word: ADCID lower 16, timestamp top word in the upper 16
   ReadWord();
@@ -204,8 +207,8 @@ void ParseGE::ReadSingleEvent()
   uint64_t timestamp = word >> 16;
   ReadWord();
   timestamp = (timestamp << 32) + word;
-  event->SetTimestamp((double)timestamp, false);
-	event->SetTimestamp((double)(timestamp*clockMultiplier), true);
+  event->SetTimestampGE((double)timestamp, false);
+	event->SetTimestampGE((double)(timestamp*(1000/clockFreq)), true);
 	
 	// Account for the extra 2 words from the wrap
 	if(rawWrap)
@@ -247,10 +250,6 @@ void ParseGE::ReadSingleEvent()
 	// Cast whole vector as double
 	vector<double> dRawTrace(rawTrace.begin(), rawTrace.end());
   event->SetWFRaw(dRawTrace);
-  // Determine a timestamp from the waveform using the T50 time
-  event->CalcT50Offset();
-	event->SetTimestampT50(event->GetTimestamp(false)+event->GetT50Offset(false), false);
-	event->SetTimestampT50(event->GetTimestamp(true)+event->GetT50Offset(true), true);
 
   // Energy samples
   vector<int> energyTrace;
@@ -270,12 +269,12 @@ void ParseGE::ReadSingleEvent()
   // Maximum energy value
   ReadWord();
   int energyMax = (int)word;
-	event->SetEnergyMax(energyMax);
+	event->SetEnergyGEMax(energyMax);
 	// First energy value (first sample, kind of a fake basline)
   ReadWord();
 	int energyFirst = (int)word;
-	event->SetEnergyFirst((double)energyFirst);
-  event->SetEnergy((double)(energyMax - energyFirst));
+	event->SetEnergyGEFirst((double)energyFirst);
+  event->SetEnergyGE((double)(energyMax - energyFirst));
 
   // Pileup flags
   ReadWord();
@@ -283,9 +282,6 @@ void ParseGE::ReadSingleEvent()
   // Trailer word
   ReadWord();
   header = word;
-
-	// Analysis/calculations
-	event->CalcIMax();
 
   return;
 }
