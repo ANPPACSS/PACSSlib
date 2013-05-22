@@ -1,4 +1,4 @@
-#include "../LYSOEvent.hh"
+#include "../COINCEvent.hh"
 #include "../PACSSAnalysis.hh"
 
 void CalcSlidePos(string inFileName, string outFileName, int nSlidePos);
@@ -16,10 +16,10 @@ int main(int argc, char *argv[])
 			inFileName = (string)argv[1];
 			outFileName = (string)argv[2];
       nSlidePos = atoi(argv[3]);
-      cout << "Calculating Lerche slide positions with " << nSlidePos << " positions." << endl;
+      cout << "Calculating Gauss & Lerche slide positions with " << nSlidePos << " positions." << endl;
       break;
     default:
-      cout << "Usage: " << argv[0] << " [LYSO ROOT file] [analysis output ROOT file] [n positions]" << endl;
+      cout << "Usage: " << argv[0] << " [COINC ROOT file] [analysis output ROOT file] [n positions]" << endl;
       return 1;
   }
 
@@ -30,12 +30,12 @@ int main(int argc, char *argv[])
 
 void CalcSlidePos(string inFileName, string outFileName, int nSlidePos)
 {
-	double lercheXPos, lercheYPos;
-	vector<double> chi2LX, chi2LY;
+	double gaussXPos, gaussYPos, lercheXPos, lercheYPos;
+	vector<double> chi2GX, chi2GY, chi2LX, chi2LY;
   // ROOT stuff
   TFile *rootFile = new TFile(inFileName.c_str(), "READ");
-	TTree *eventTree = (TTree*)rootFile->Get("LYSOEvents");
-	LYSOEvent *event = new LYSOEvent();
+	TTree *eventTree = (TTree*)rootFile->Get("COINCEvents");
+	COINCEvent *event = new COINCEvent();
 	eventTree->SetBranchAddress("event", &event);
 
 	// Handle the output
@@ -47,14 +47,22 @@ void CalcSlidePos(string inFileName, string outFileName, int nSlidePos)
 	string NPos = to_string(nSlidePos) + "Pos";
 	// Check if the branch for this analysis exists. If so, overwrite it, if not, make it
 	// Not found
-	string bName = "lercheX" + NPos;
-	tAnalysis->Branch(bName.c_str(), &lercheXPos);
+	string bName = "gaussX" + NPos;
+	tAnalysis->Branch(bName.c_str(), &gaussXPos);
+	bName = "gaussY" + NPos;
+	tAnalysis->Branch(bName.c_str(), &gaussYPos);
+	bName = "lercheX" + NPos;
+	tAnalysis->Branch(bName.c_str(), &lercheXPos);	
 	bName = "lercheY" + NPos;
-	tAnalysis->Branch(bName.c_str(), &lercheYPos);
+	tAnalysis->Branch(bName.c_str(), &lercheYPos);	
+	bName = "chi2GX" + NPos;
+	tAnalysis->Branch(bName.c_str(), &chi2GX);
+	bName = "chi2GY" + NPos;
+	tAnalysis->Branch(bName.c_str(), &chi2GY);
 	bName = "chi2LX" + NPos;
-	tAnalysis->Branch(bName.c_str(), &chi2LX);
+	tAnalysis->Branch(bName.c_str(), &chi2LX);	
 	bName = "chi2LY" + NPos;
-	tAnalysis->Branch(bName.c_str(), &chi2LY);
+	tAnalysis->Branch(bName.c_str(), &chi2LY);	
  	cout << "ROOT file loaded, tree created." << endl;
 	
 	// Loop over all the events
@@ -62,10 +70,13 @@ void CalcSlidePos(string inFileName, string outFileName, int nSlidePos)
   {
 		// Grab this event
 		eventTree->GetEntry(i);
+
+		// Do analysis
+		PACSSAnalysis::CalcSlidingGaussXYPosition(event, gaussXPos, chi2GX, gaussYPos, chi2GY, nSlidePos);
 		PACSSAnalysis::CalcSlidingLercheXYPosition(event, lercheXPos, chi2LX, lercheYPos, chi2LY, nSlidePos);
 
     if(i % 1000 == 0)
-      cout << "Calculating positions for event " << i << ": " << "(" << lercheXPos << ", " << lercheYPos << ")" << endl;
+      cout << "Calculating positions for event " << i << ": " << "(" << gaussXPos << ", " << gaussYPos << ")" << endl;
 		tAnalysis->Fill();
   }
   
