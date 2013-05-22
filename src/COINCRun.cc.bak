@@ -81,20 +81,6 @@ TH2D* COINCRun::Get2DHist(string histName)
 	return (TH2D*)gDirectory->FindObject(histName.c_str());
 }
 
-// Some analysis functions will go here for the time being, as opposed to being put into the GEEvent object
-// this is to avoid re-parsing every time a new function is added
-vector<double> COINCRun::SubtractBaseline(vector<double> aWF, int nSampAvg)
-{
-	double avg = 0.0;
-	vector<double> bWF;
-	for(size_t i=0;i < (size_t)nSampAvg;i++)
-		avg += aWF.at(i);
-	avg /= nSampAvg;
-	for(size_t i=0;i < aWF.size();i++)
-		bWF.push_back(aWF.at(i)-avg);
-	return bWF;
-}
-
 // Plot energy histograms from both detectors on one canvas
 void COINCRun::PlotEnergyHist(int nGe, double xMinGe, double xMaxGe, int nLYSO, double xMinLYSO, double xMaxLYSO)
 {

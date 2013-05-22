@@ -280,3 +280,17 @@ void PACSSAnalysis::CalcSlidingLercheXYPosition(LYSOEvent *event, double &xPos, 
 
 	return;
 }
+
+// Subtract the baseline. Use the first ~20% of samples as the average
+vector<double> PACSSAnalysis::SubtractBaseline(vector<double> aWave)
+{
+	vector<double> retWave;
+	double bl = 0.0;
+	size_t nSampBL = aWave.size()/5;
+	for(size_t i=0;i < nSampBL;i++)
+		bl += aWave[i];
+	bl /= nSampBL;
+	for(size_t i=0;i < aWave.size();i++)
+		retWave.push_back(aWave[i]-bl);
+	return retWave;
+}
