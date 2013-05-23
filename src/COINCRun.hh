@@ -28,9 +28,9 @@ class COINCRun: public PACSSRun
 
 		// Plotting functions
 		void				PlotEnergyHist(TCut inCut="",string plotArgsGE="(100000,0.0,1.0e7)",string plotArgslYSO="(2048,-10.0,1023.0)");
-		void				PlotWaveform(int nEvent); // need to add diff wf
-		void				PlotWaveformStack(TCut inCut = "");
-		void			  PlotAverageWaveform(TCut inCut="");
+		void				PlotWaveform(int nEvent, int nBL); // need to add diff wf
+		void				PlotWaveformStack(TCut inCut = "", double yMin=0.0, double yMax=5.0e4, int nBL=600);
+		void			  PlotAverageWaveform(TCut inCut="", int nBL=600);
 		void				PlotTimeBetweenCoincEvents(TCut inCut="", string plotArgs="(500, -5000.0, 5000.0)");
 		void				PlotChargeMap(TCut inCut="", bool gc=true);
 		void				PlotChargeProj(TCut inCut="", bool gc=true);

@@ -152,18 +152,18 @@ void COINCRun::PlotEnergyHist(TCut inCut, string plotArgsGE, string plotArgsLYSO
   return;
 }
 
-void COINCRun::PlotWaveform(int nEvent)
+void COINCRun::PlotWaveform(int nEvent, int nBL)
 {
 	TCanvas *cWaveforms;
 	TH1D *hRaw;
 	string cName, cDesc, histName;
-	string cutName = "_" + to_string(nEvent);
+	string cutName = "_" + to_string(nEvent) + "_" + to_string(nBL) + "bl";
 	cName = cPrefix + "cWaveform" + cutName;
 	cDesc = "Raw and Diff. Waveforms Event " + to_string(nEvent);
-	histName = hPrefix + "RawWaveform" + cutName;
+	histName = hPrefix + "hRawWaveform" + cutName;
 	// Get the waveforms here so we know the sizes for the histograms
 	GetEvent(nEvent);
-	vector<double> wfRaw = PACSSAnalysis::SubtractBaseline(event->GetWFRaw());
+	vector<double> wfRaw = PACSSAnalysis::SubtractBaseline(event->GetWFRaw(), nBL);
 
 	// Check for the TCanvas object existing. Not in gDirectory, because that would make sense
 	if((cWaveforms = GetCanvas(cName.c_str())) == 0)
@@ -193,24 +193,27 @@ void COINCRun::PlotWaveform(int nEvent)
 	return;
 }
 
-void COINCRun::PlotWaveformStack(TCut inCut)
+void COINCRun::PlotWaveformStack(TCut inCut, double yMin, double yMax, int nBL)
 {
 	TCanvas *cWaveforms;
 	string cName, cDesc;
-	string cutName = "_" + (string)inCut.GetName();
+	string cutName = "_" + (string)inCut.GetName() + "_" + to_string(nBL) + "bl";
 	cName = cPrefix + "cWaveformStack" + cutName;
 	cDesc = "Stacked Raw Waveforms";
-	string histName = hPrefix + "hWaveformStack" + "_" + cutName + "_" + "0";
-	TH1I *hWaves;
+	string histName = hPrefix + "hWaveformStack" + "_" + cutName;
+	TH2D *hWaves;
+	int wfLen = (int)event->GetWFRaw().size();
 
 	if((cWaveforms = GetCanvas(cName.c_str())) == 0)
 		cWaveforms = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 600);
 	// Check for one of the histograms existing
-	if(!(hWaves = (TH1I*)GetHistogram(histName)) == 0)
+	if((hWaves = (TH2D*)GetHistogram(histName)) == 0)
+		hWaves = new TH2D(histName.c_str(), "Raw Waveforms, Stacked", wfLen, 0, (wfLen-1)*(1000/event->GetClockFreq()), yMax-yMin, yMin, yMax);
+	else
 	{
 		cout << "Histogram found in gDirectory. Delete them or change the names to redraw." << endl;
 		cWaveforms->cd();
-		cWaveforms->Update();
+		hWaves->Draw("colz");
 		return;
 	}
 
@@ -225,18 +228,14 @@ void COINCRun::PlotWaveformStack(TCut inCut)
 	for(int i=0;i < tSelection->GetEntries();i++)
 	{
 		tSelection->GetEntry(i);
-		vector<double> rawWF = PACSSAnalysis::SubtractBaseline(event->GetWFRaw());
-		histName = hPrefix + "hWaveformStack" + "_" + cutName + "_" + to_string(i);
-		hWaves = new TH1I(histName.c_str(), "Raw Waveform", (int)rawWF.size(), 0, ((int)rawWF.size()-1)*(1000/event->GetClockFreq()));
+		vector<double> rawWF = PACSSAnalysis::SubtractBaseline(event->GetWFRaw(), nBL);
 		for(size_t k=0;k < rawWF.size();k++)
 			hWaves->Fill(k*(1000/event->GetClockFreq()), rawWF.at(k));
-		hWaves->GetXaxis()->SetTitle("Time (ns)");
-		hWaves->GetYaxis()->SetTitle("ADC Counts");
-		hWaves->SetFillColor(kBlue);
-		hWaves->SetFillStyle(0000);
-		hWaves->Draw("same");
 	}
 
+	hWaves->GetXaxis()->SetTitle("Time (ns)");
+	hWaves->GetYaxis()->SetTitle("ADC Counts");
+	hWaves->Draw("colz");
 	// Clean up
 	delete tSelection;
 	fTemp->Close();
@@ -244,7 +243,7 @@ void COINCRun::PlotWaveformStack(TCut inCut)
 	return;
 }
 
-void COINCRun::PlotAverageWaveform(TCut inCut)
+void COINCRun::PlotAverageWaveform(TCut inCut, int nBL)
 {
 	TCanvas *cAvgWaveform;
 	TH1I *hAvgWave;
@@ -278,7 +277,7 @@ void COINCRun::PlotAverageWaveform(TCut inCut)
 	for(int i=0;i < tSelection->GetEntries();i++)
 	{
 		tSelection->GetEntry(i);
-		vector<double> rawWF = PACSSAnalysis::SubtractBaseline(event->GetWFRaw());
+		vector<double> rawWF = PACSSAnalysis::SubtractBaseline(event->GetWFRaw(), nBL);
 		for(size_t k=0;k < rawWF.size();k++)
 			hAvgWave->Fill(k*(1000/event->GetClockFreq()), rawWF[k]);
 		if(i % reportFreq == 0)
