@@ -8,8 +8,11 @@ class PACSSRun: public TObject
 	protected:
 		string fileName;
 		string cPrefix;
+		string hPrefix;
 		TFile *rootFile;
+		TFile	*aFile;
 		TTree *eventTree;
+		TTree *aTree;
 		int 	 reportFreq;
 		int 	 iEvent;
 		int 	 numEvents;
