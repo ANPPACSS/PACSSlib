@@ -91,6 +91,27 @@ TCanvas* COINCRun::GetCanvas(string canvName)
 	return (TCanvas*)gROOT->GetListOfCanvases()->FindObject(canvName.c_str());
 }
 
+void COINCRun::SaveHistogram(string histName, string hFileName)
+{
+	if((hFileName == fileName) || (hFileName.c_str() == aFile->GetName()))
+	{
+		cout << "Input file name the same as data file name. You definitely don't want to do that!" << endl;
+		return;
+	}
+	TFile *f = new TFile(hFileName.c_str(), "RECREATE");
+	TObject *o = gDirectory->FindObject(histName.c_str());
+	if(o)
+	{
+		o->Write();
+		cout << "Histogram written to file " << hFileName << endl;
+	}
+	else
+		cout << "Histogram not found in gDirectory." << endl;
+	f->Close();
+	rootFile->cd();
+	return;
+}
+
 // Plot energy histograms from both detectors on one canvas
 void COINCRun::PlotEnergyHist(TCut inCut, string plotArgsGE, string plotArgsLYSO)
 {
@@ -489,11 +510,42 @@ void COINCRun::PlotSGPosMap(TCut inCut, string plotArgs)
 		return;
 	}
 	string toDraw = "gaussY98Pos:gaussX98Pos >> " + histName + plotArgs;
-	eventTree->Draw(toDraw.c_str(), inCut, "NBQ");
+	int nPlotted = eventTree->Draw(toDraw.c_str(), inCut, "NBQ");
 	hSGPos = (TH2D*)GetHistogram(histName);
 	hSGPos->SetTitle("Sliding Gauss Position Map");
 	hSGPos->GetXaxis()->SetTitle("SGX Position (mm)");
 	hSGPos->GetYaxis()->SetTitle("SGY Position (mm)");
 	hSGPos->Draw("colz");
+	cout << nPlotted << " events plotted based on cut." << endl;
+	return;
+}
+
+void COINCRun::PlotSLPosMap(TCut inCut, string plotArgs)
+{	
+	TCanvas *cSLPosMap;
+	TH2D *hSLPos;
+	string cName, cDesc, histName;
+	string cutName = "_" + (string)inCut.GetName();
+	cName = cPrefix + "cSLPosMap" + cutName;
+	cDesc = "Sliding Lerche Position";
+	histName = hPrefix + "hSLPosMap" + cutName;
+
+	if((cSLPosMap = GetCanvas(cName.c_str())) == 0)
+		cSLPosMap = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 600);
+	if(!(hSLPos = (TH2D*)GetHistogram(histName)) == 0)
+	{
+		cout << "Histogram found in gDirectory." << endl;
+		cSLPosMap->cd();
+		hSLPos->Draw("colz");
+		return;
+	}
+	string toDraw = "lercheY98Pos:lercheX98Pos >> " + histName + plotArgs;
+	int nPlotted = eventTree->Draw(toDraw.c_str(), inCut, "NBQ");
+	hSLPos = (TH2D*)GetHistogram(histName);
+	hSLPos->SetTitle("Sliding Lerche Position Map");
+	hSLPos->GetXaxis()->SetTitle("SLX Position (mm)");
+	hSLPos->GetYaxis()->SetTitle("SLY Position (mm)");
+	hSLPos->Draw("colz");
+	cout << nPlotted << " events plotted based on cut." << endl;
 	return;
 }

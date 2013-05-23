@@ -24,21 +24,22 @@ class COINCRun: public PACSSRun
 		TObject		 *GetHistogram(string histName);
 		TCanvas		 *GetCanvas(string canvName);
 		// Save the histograms to file for loading later
-		//void				SaveHistogram(string histName, string fileName);
+		void				SaveHistogram(string histName, string hFileName);
 
 		// Plotting functions
 		void				PlotEnergyHist(TCut inCut="",string plotArgsGE="(100000,0.0,1.0e7)",string plotArgslYSO="(2048,-10.0,1023.0)");
 		void				PlotWaveform(int nEvent, int nBL); // need to add diff wf
-		void				PlotWaveformStack(TCut inCut = "", double yMin=0.0, double yMax=5.0e4, int nBL=600);
+		void				PlotWaveformStack(TCut inCut = "", double yMin=0.0, double yMax=65535.0, int nBL=600);
 		void			  PlotAverageWaveform(TCut inCut="", int nBL=600);
 		void				PlotTimeBetweenCoincEvents(TCut inCut="", string plotArgs="(500, -5000.0, 5000.0)");
 		void				PlotChargeMap(TCut inCut="", bool gc=true);
 		void				PlotChargeProj(TCut inCut="", bool gc=true);
 		void				PlotSGPosMap(TCut inCut="",string plotArgs="(98,0.0,49.0,98,0.0,49.0)");
-		/*void				PlotSGPosProj(TCut inCut="",string aFileName, int nPos, string plotArgsX="(98,0.0,49.0)", string plotArgsY="(98,0.0,49.0)");
+		//void				PlotSGPosProj(TCut inCut="", string plotArgsX="(98,0.0,49.0)", string plotArgsY="(98,0.0,49.0)");
 		void				PlotSLPosMap(TCut inCut="", string plotArgs="(98,0.0,49.0,98,0.0,49.0)");
-		void				PlotSLPosProj(TCut inCut="", string plotArgsX="(98,0.0,49.0)", string plotArgsY="(98,0.0,49.0)");
-		void				PlotT1ToT2Dist(double T1=0.10, double T2=0.90, string plotArgs="(500, -5000.0, 5000.0)");*/
+		//void				PlotSLPosProj(TCut inCut="", string plotArgsX="(98,0.0,49.0)", string plotArgsY="(98,0.0,49.0)");
+
+		//void				PlotT1ToT2Dist(double T1=0.10, double T2=0.90, string plotArgs="(500, -5000.0, 5000.0)");
 		//void				PlotT10ToT90GMap(double eGELow=0.0, double eGEHigh=16383.0);
 		//void				PlotTXToT90SGMap(double fracA, double eGELow=0.0, double eGEHigh=16383.0);
 		//void				PlotSlideChi2();
