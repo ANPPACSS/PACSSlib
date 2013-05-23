@@ -113,7 +113,7 @@ void COINCRun::SaveHistogram(string histName, string hFileName)
 }
 
 // Plot energy histograms from both detectors on one canvas
-void COINCRun::PlotEnergyHist(TCut inCut, string plotArgsGE, string plotArgsLYSO)
+TObjArray* COINCRun::PlotEnergyHist(TCut inCut, string plotArgsGE, string plotArgsLYSO)
 {
 	TCanvas *cEnergyHist;
 	TH1D *hLYSO;
@@ -143,7 +143,10 @@ void COINCRun::PlotEnergyHist(TCut inCut, string plotArgsGE, string plotArgsLYSO
 		hGE->Draw();
 		cEnergyHist->cd(2);
 		hLYSO->Draw();
-		return;
+		TObjArray *ret = new TObjArray();
+		ret->Add(hGE);
+		ret->Add(hLYSO);
+  	return ret;
 	}
 
 	// Fill the histograms
@@ -169,11 +172,13 @@ void COINCRun::PlotEnergyHist(TCut inCut, string plotArgsGE, string plotArgsLYSO
 	hLYSO->SetFillColor(kBlue);
 	hLYSO->Draw();
 	cout << nPlotted << " drawn to LYSO histogram." << endl;
-
-  return;
+	TObjArray *ret = new TObjArray();
+	ret->Add(hGE);
+	ret->Add(hLYSO);
+  return ret;
 }
 
-void COINCRun::PlotWaveform(int nEvent, int nBL)
+TH1D* COINCRun::PlotWaveform(int nEvent, int nBL)
 {
 	TCanvas *cWaveforms;
 	TH1D *hRaw;
@@ -197,7 +202,7 @@ void COINCRun::PlotWaveform(int nEvent, int nBL)
 		cout << "Histogram found in gDirectory. Delete them or change the names to redraw." << endl;
 		hRaw = (TH1D*)GetHistogram(histName);
 		hRaw->Draw();
-		return;
+		return hRaw;
 	}
 
 	// Fill the histograms
@@ -211,10 +216,10 @@ void COINCRun::PlotWaveform(int nEvent, int nBL)
 	hRaw->SetFillStyle(0000);
 	hRaw->Draw();
 
-	return;
+	return hRaw;
 }
 
-void COINCRun::PlotWaveformStack(TCut inCut, double yMin, double yMax, int nBL)
+TH2D* COINCRun::PlotWaveformStack(TCut inCut, int nBL, double yMin, double yMax)
 {
 	TCanvas *cWaveforms;
 	string cName, cDesc;
@@ -235,7 +240,7 @@ void COINCRun::PlotWaveformStack(TCut inCut, double yMin, double yMax, int nBL)
 		cout << "Histogram found in gDirectory. Delete them or change the names to redraw." << endl;
 		cWaveforms->cd();
 		hWaves->Draw("colz");
-		return;
+		return hWaves;
 	}
 
 	// Create a new tree with the cut
@@ -261,13 +266,13 @@ void COINCRun::PlotWaveformStack(TCut inCut, double yMin, double yMax, int nBL)
 	delete tSelection;
 	fTemp->Close();
 	rootFile->cd();
-	return;
+	return hWaves;
 }
 
-void COINCRun::PlotAverageWaveform(TCut inCut, int nBL)
+TH1D* COINCRun::PlotAverageWaveform(TCut inCut, int nBL)
 {
 	TCanvas *cAvgWaveform;
-	TH1I *hAvgWave;
+	TH1D *hAvgWave;
 	string cName, cDesc;
 	string cutName = "_" + (string)inCut.GetName();
 	cName = cPrefix + "cAvgWaveform" + cutName;
@@ -277,14 +282,14 @@ void COINCRun::PlotAverageWaveform(TCut inCut, int nBL)
 	if((cAvgWaveform = GetCanvas(cName.c_str())) == 0)
 		cAvgWaveform = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 600);
 	// Check for one of the histograms existing
-	if((hAvgWave = (TH1I*)GetHistogram(histName)) == 0)
-		hAvgWave = new TH1I(histName.c_str(), "Average Waveform",(int)event->GetWFRaw().size(), 0, ((int)event->GetWFRaw().size()-1)*(1000/event->GetClockFreq()));
+	if((hAvgWave = (TH1D*)GetHistogram(histName)) == 0)
+		hAvgWave = new TH1D(histName.c_str(), "Average Waveform",(int)event->GetWFRaw().size(), 0, ((int)event->GetWFRaw().size()-1)*(1000/event->GetClockFreq()));
 	else
 	{
 		cout << "Histogram found in gDirectory. Delete them or change the names to redraw." << endl;
 		cAvgWaveform->cd();
 		hAvgWave->Draw();
-		return;
+		return hAvgWave;
 	}
 
 	// Create a new tree with the cut
@@ -315,10 +320,10 @@ void COINCRun::PlotAverageWaveform(TCut inCut, int nBL)
 	fTemp->Close();
 	rootFile->cd();
 
-	return;
+	return hAvgWave;
 }
 
-void COINCRun::PlotTimeBetweenCoincEvents(TCut inCut, string plotArgs)
+TH1D* COINCRun::PlotTimeBetweenCoincEvents(TCut inCut, string plotArgs)
 {
 	TCanvas *cCoincDT;
 	TH1D *hCoincDT;
@@ -336,7 +341,7 @@ void COINCRun::PlotTimeBetweenCoincEvents(TCut inCut, string plotArgs)
 		cout << "Histograms found in gDirectory. Delete them or change the names to redraw." << endl;
 		cCoincDT->cd();
 		hCoincDT->Draw();
-		return;
+		return hCoincDT;
 	}
 
 	// Get the time of the first event (offset)
@@ -357,10 +362,10 @@ void COINCRun::PlotTimeBetweenCoincEvents(TCut inCut, string plotArgs)
 	hCoincDT->Draw();
 	cout << nPlotted << " events plotted." << endl;
 
-	return;
+	return hCoincDT;
 }
 
-void COINCRun::PlotChargeMap(TCut inCut, bool gc)
+TH2D* COINCRun::PlotChargeMap(TCut inCut, bool gc)
 {
 	TCanvas *cChargeMap;
 	TH2D *hCharge;
@@ -379,7 +384,7 @@ void COINCRun::PlotChargeMap(TCut inCut, bool gc)
 		cout << "Histogram found in gDirectory. Delete it or change the name to redraw." << endl;
 		cChargeMap->cd();
 		hCharge->Draw();
-		return;
+		return hCharge;
 	}
 
 	// Make a copy of the tree with the selection
@@ -413,11 +418,11 @@ void COINCRun::PlotChargeMap(TCut inCut, bool gc)
 	delete tSelection;
 	fTemp->Close();
 	rootFile->cd();
-	return;
+	return hCharge;
 }
 
 // Arguments: energy window
-void COINCRun::PlotChargeProj(TCut inCut, bool gc)
+TObjArray* COINCRun::PlotChargeProj(TCut inCut, bool gc)
 {
 	TCanvas *cChargeProj;
 	TH1D *hX;
@@ -447,7 +452,10 @@ void COINCRun::PlotChargeProj(TCut inCut, bool gc)
 		hY = (TH1D*)GetHistogram(histName[1]);
 		cChargeProj->cd(2);
 		hY->Draw();
-		return;
+		TObjArray *ret = new TObjArray();
+		ret->Add(hX);
+		ret->Add(hY);
+		return ret;
 	}
 
 	// Make a temp tree to hold the selection
@@ -487,10 +495,13 @@ void COINCRun::PlotChargeProj(TCut inCut, bool gc)
 	delete tSelection;
 	fTemp->Close();
 	rootFile->cd();
-	return;
+	TObjArray *ret = new TObjArray();
+	ret->Add(hX);
+	ret->Add(hY);
+	return ret;
 }
 
-void COINCRun::PlotSGPosMap(TCut inCut, string plotArgs)
+TH2D* COINCRun::PlotSGPosMap(TCut inCut, string plotArgs)
 {	
 	TCanvas *cSGPosMap;
 	TH2D *hSGPos;
@@ -507,7 +518,7 @@ void COINCRun::PlotSGPosMap(TCut inCut, string plotArgs)
 		cout << "Histogram found in gDirectory." << endl;
 		cSGPosMap->cd();
 		hSGPos->Draw("colz");
-		return;
+		return hSGPos;
 	}
 	string toDraw = "gaussY98Pos:gaussX98Pos >> " + histName + plotArgs;
 	int nPlotted = eventTree->Draw(toDraw.c_str(), inCut, "NBQ");
@@ -517,10 +528,10 @@ void COINCRun::PlotSGPosMap(TCut inCut, string plotArgs)
 	hSGPos->GetYaxis()->SetTitle("SGY Position (mm)");
 	hSGPos->Draw("colz");
 	cout << nPlotted << " events plotted based on cut." << endl;
-	return;
+	return hSGPos;
 }
 
-void COINCRun::PlotSLPosMap(TCut inCut, string plotArgs)
+TH2D* COINCRun::PlotSLPosMap(TCut inCut, string plotArgs)
 {	
 	TCanvas *cSLPosMap;
 	TH2D *hSLPos;
@@ -537,7 +548,7 @@ void COINCRun::PlotSLPosMap(TCut inCut, string plotArgs)
 		cout << "Histogram found in gDirectory." << endl;
 		cSLPosMap->cd();
 		hSLPos->Draw("colz");
-		return;
+		return hSLPos;
 	}
 	string toDraw = "lercheY98Pos:lercheX98Pos >> " + histName + plotArgs;
 	int nPlotted = eventTree->Draw(toDraw.c_str(), inCut, "NBQ");
@@ -547,5 +558,5 @@ void COINCRun::PlotSLPosMap(TCut inCut, string plotArgs)
 	hSLPos->GetYaxis()->SetTitle("SLY Position (mm)");
 	hSLPos->Draw("colz");
 	cout << nPlotted << " events plotted based on cut." << endl;
-	return;
+	return hSLPos;
 }
