@@ -84,5 +84,6 @@ void CalcSlidePos(string inFileName, string outFileName, int nSlidePos)
 	fOut->Close();
   rootFile->Close();
   cout << "Calculated positions written to Analysis tree  in " << inFileName << endl;
-  return;
+  delete event;
+	return;
 }

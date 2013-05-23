@@ -6,8 +6,11 @@ PACSSRun::PACSSRun()
 {
 	fileName = "";
 	cPrefix.clear();
+	hPrefix.clear();
 	rootFile = nullptr;
+	aFile = nullptr;
 	eventTree = nullptr;
+	aTree = nullptr;
 	iEvent = 0;
 	numEvents = 0;
 	SetReportFreq(10000);
@@ -17,13 +20,17 @@ PACSSRun::PACSSRun(string newFileName)
 {
 	fileName = newFileName;
 
-	// Prepare the canvas prefix string
+	// Prepare the canvas/hist prefix strings
 	cPrefix.clear();
-	cPrefix.append(fileName + "_");
+	cPrefix.append("c_" + fileName + "_");
+	hPrefix.clear();
+	hPrefix.append("h_" + fileName + "_");
 
 	// These will be reset anyway, but just to be safe
 	rootFile = nullptr;
+	aFile = nullptr;
 	eventTree = nullptr;
+	aTree = nullptr;
 
 	iEvent = 0;
 	numEvents = 0;

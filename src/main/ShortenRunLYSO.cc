@@ -57,5 +57,6 @@ void ShortenRun(string inFileName, string outFileName, int nEvents)
 	fOut->Close();
   rootFile->Close();
   cout << "Calculated positions written to Analysis tree  in " << inFileName << endl;
-  return;
+  delete event;
+	return;
 }

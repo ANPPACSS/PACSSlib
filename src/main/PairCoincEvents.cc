@@ -141,6 +141,9 @@ void PairEvents(double dtWindow, string fileNameLYSO, string fileNameGE, string 
   rootFile->cd();
   rootFile->Write();
   rootFile->Close();
-  cout << "Paired events written to paired_events.root." << endl;
+	delete event;
+	delete runGE;
+	delete runLYSO;
+  cout << "Paired events written to " << fileNameCOINC << endl;
   return;
 }
