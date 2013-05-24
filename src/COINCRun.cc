@@ -631,8 +631,8 @@ TObjArray* COINCRun::PlotSGChi2(TCut inCut, double xMin, double xMax)
 	}
 	if((hSGChi2X = (TH1D*)GetHistogram(histName[0])) == 0)
 	{
-		hSGChi2X = new TH1D(histName[0].c_str(), "X #Chi^{2}", xMax-xMin, xMin, xMax);
-		hSGChi2Y = new TH1D(histName[1].c_str(), "Y #Chi^{2}", xMax-xMin, xMin, xMax);
+		hSGChi2X = new TH1D(histName[0].c_str(), "X #Chi^{2}", (xMax-xMin), xMin, xMax);
+		hSGChi2Y = new TH1D(histName[1].c_str(), "Y #Chi^{2}", (xMax-xMin), xMin, xMax);
 	}
 	else
 	{
@@ -707,8 +707,8 @@ TObjArray* COINCRun::PlotSGMinChi2(TCut inCut, double xMin, double xMax)
 	}
 	if((hSGChi2X = (TH1D*)GetHistogram(histName[0])) == 0)
 	{
-		hSGChi2X = new TH1D(histName[0].c_str(), "X Min #Chi^{2}", xMax-xMin, xMin, xMax);
-		hSGChi2Y = new TH1D(histName[1].c_str(), "Y Min #Chi^{2}", xMax-xMin, xMin, xMax);
+		hSGChi2X = new TH1D(histName[0].c_str(), "X Min #Chi^{2}", (xMax-xMin), xMin, xMax);
+		hSGChi2Y = new TH1D(histName[1].c_str(), "Y Min #Chi^{2}", (xMax-xMin), xMin, xMax);
 	}
 	else
 	{
@@ -958,8 +958,8 @@ TObjArray* COINCRun::PlotSLChi2(TCut inCut, double xMin, double xMax)
 	}
 	if((hSGChi2X = (TH1D*)GetHistogram(histName[0])) == 0)
 	{
-		hSGChi2X = new TH1D(histName[0].c_str(), "X #Chi^{2}", xMax-xMin, xMin, xMax);
-		hSGChi2Y = new TH1D(histName[1].c_str(), "Y #Chi^{2}", xMax-xMin, xMin, xMax);
+		hSGChi2X = new TH1D(histName[0].c_str(), "X #Chi^{2}", (xMax-xMin), xMin, xMax);
+		hSGChi2Y = new TH1D(histName[1].c_str(), "Y #Chi^{2}", (xMax-xMin), xMin, xMax);
 	}
 	else
 	{
@@ -1034,8 +1034,8 @@ TObjArray* COINCRun::PlotSLMinChi2(TCut inCut, double xMin, double xMax)
 	}
 	if((hSGChi2X = (TH1D*)GetHistogram(histName[0])) == 0)
 	{
-		hSGChi2X = new TH1D(histName[0].c_str(), "X Min #Chi^{2}", xMax-xMin, xMin, xMax);
-		hSGChi2Y = new TH1D(histName[1].c_str(), "Y Min #Chi^{2}", xMax-xMin, xMin, xMax);
+		hSGChi2X = new TH1D(histName[0].c_str(), "X Min #Chi^{2}", (xMax-xMin), xMin, xMax);
+		hSGChi2Y = new TH1D(histName[1].c_str(), "Y Min #Chi^{2}", (xMax-xMin), xMin, xMax);
 	}
 	else
 	{
