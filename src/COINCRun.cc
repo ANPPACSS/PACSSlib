@@ -206,10 +206,15 @@ TH1D* COINCRun::PlotWaveform(int nEvent, int nBL)
 	}
 
 	// Fill the histograms
+	/*string toDraw = "wfRaw:(Iteration$*(1000/clockFreq))>>"+histName+"("+to_string(wfRaw.size())+",";
+	toDraw += "(0.0,"+to_string(wfRaw.size()-1)+")";
+	string sEvent = "(Entry$ == " + to_string(nEvent) + ")";
+	eventTree->Draw(toDraw.c_str(), sEvent, "NBQ");*/
 	for(size_t i=0;i < wfRaw.size();i++)
 		hRaw->Fill(i*(1000/event->GetClockFreq()), wfRaw.at(i));
 
 	// Draw it
+	//hRaw = (TH1D*)GetHistogram(histName);
   hRaw->GetXaxis()->SetTitle("Time (ns)");
   hRaw->GetYaxis()->SetTitle("ADC Counts");
   hRaw->SetFillColor(kRed);
@@ -246,7 +251,7 @@ TH2D* COINCRun::PlotWaveformStack(TCut inCut, int nBL, double yMin, double yMax)
 	// Create a new tree with the cut
 	cout << "Copying tree using selection. This may take a moment." << endl;
 	// Make a temp file to hold the new tree, since the current file is read only
-	TFile *fTemp = new TFile("temp.root", "RECREATE");
+	TFile *fTemp = new TFile("plotwfstack_temp.root", "RECREATE");
 	TTree *tSelection = (TTree*)eventTree->CopyTree(inCut);
 	cout << "Cut tree has " << tSelection->GetEntries() << " events based on your cut." << endl;
 	rootFile->cd();
@@ -277,7 +282,7 @@ TH1D* COINCRun::PlotAverageWaveform(TCut inCut, int nBL)
 	string cutName = "_" + (string)inCut.GetName();
 	cName = cPrefix + "cAvgWaveform" + cutName;
 	cDesc = "Average Waveform";
-	string histName = hPrefix + "hAvgWaveform" + "_" + cutName;
+	string histName = hPrefix + "hAvgWaveform" + cutName;
 
 	if((cAvgWaveform = GetCanvas(cName.c_str())) == 0)
 		cAvgWaveform = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 600);
@@ -295,7 +300,7 @@ TH1D* COINCRun::PlotAverageWaveform(TCut inCut, int nBL)
 	// Create a new tree with the cut
 	cout << "Copying tree using selection. This may take a moment." << endl;
 	// Make a temp file to hold the new tree, since the current file is read only
-	TFile *fTemp = new TFile("temp.root", "RECREATE");
+	TFile *fTemp = new TFile("plotavgwf_temp.root", "RECREATE");
 	TTree *tSelection = (TTree*)eventTree->CopyTree(inCut);
 	cout << "Cut tree has " << tSelection->GetEntries() << " events based on your cut." << endl;
 	rootFile->cd();
@@ -389,7 +394,7 @@ TH2D* COINCRun::PlotChargeMap(TCut inCut, bool gc)
 
 	// Make a copy of the tree with the selection
 	cout << "Copying tree using selection. This may take a moment." << endl;
-	TFile *fTemp = new TFile("temp.root", "RECREATE");
+	TFile *fTemp = new TFile("plotchargemap_temp.root", "RECREATE");
 	TTree *tSelection = eventTree->CopyTree(inCut);
 	cout << tSelection->GetEntries() << " events in temp tree based on your selection." << endl;
 	rootFile->cd();
@@ -460,7 +465,7 @@ TObjArray* COINCRun::PlotChargeProj(TCut inCut, bool gc)
 
 	// Make a temp tree to hold the selection
 	cout << "Copying tree using selection. This may take a moment." << endl;
-	TFile *fTemp = new TFile("temp.root", "RECREATE");
+	TFile *fTemp = new TFile("plotchargeproj_temp.root", "RECREATE");
 	TTree *tSelection = eventTree->CopyTree(inCut);
 	cout << tSelection->GetEntries() << " events selected based on your cut." << endl;
 	rootFile->cd();
@@ -531,6 +536,303 @@ TH2D* COINCRun::PlotSGPosMap(TCut inCut, string plotArgs)
 	return hSGPos;
 }
 
+TObjArray* COINCRun::PlotSGChi2ByPos(TCut inCut)
+{
+	TCanvas *cSGChi2;
+	TH1D *hSGChi2X;
+	TH1D *hSGChi2Y;
+	string cName, cDesc, histName[2];
+	string cutName = "_" + (string)inCut.GetName();
+	cName = cPrefix + "cSGChi2" + cutName;
+	cDesc = "Sliding Gauss #Chi^{2}";
+	histName[0] = hPrefix + "hSGChi2XPos" + cutName;
+	histName[1] = hPrefix + "hSGChi2YPos" + cutName;
+	
+	if((cSGChi2 = GetCanvas(cName.c_str())) == 0)
+	{
+		cSGChi2 = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 1080);
+		cSGChi2->Divide(1,2);
+	}
+	if((hSGChi2X = (TH1D*)GetHistogram(histName[0])) == 0)
+	{
+		hSGChi2X = new TH1D(histName[0].c_str(), "X #Chi^{2}", 98, 0.0, 98.0);
+		hSGChi2Y = new TH1D(histName[1].c_str(), "Y #Chi^{2}", 98, 0.0, 98.0);
+	}
+	else
+	{
+		cout << "Histograms found in gDirectory." << endl;
+		hSGChi2Y = (TH1D*)GetHistogram(histName[1]);
+		cSGChi2->cd(1);
+		hSGChi2X->Draw();
+		cSGChi2->cd(2);
+		hSGChi2Y->Draw();
+		TObjArray *ret = new TObjArray();
+		ret->Add(hSGChi2X);
+		ret->Add(hSGChi2Y);
+		return ret;
+	}
+	// Make a temp tree to hold the selection
+	vector<double> *chi2X = new vector<double>();
+	vector<double> *chi2Y = new vector<double>();
+	aTree->SetBranchAddress("chi2GX98Pos", &chi2X);
+	aTree->SetBranchAddress("chi2GY98Pos", &chi2Y);
+	cout << "Copying tree using selection. This may take a moment." << endl;
+	TFile *fTemp = new TFile("plotsgchi2pos_temp.root", "RECREATE");
+	TTree *tSelection = eventTree->CopyTree(inCut);
+	cout << tSelection->GetEntries() << " events selected based on your cut." << endl;
+	rootFile->cd();
+	for(int i=0;i < tSelection->GetEntries();i++)
+	{
+		tSelection->GetEntry(i);
+		for(size_t k=0;k < chi2X->size();k++)
+		{
+			hSGChi2X->Fill(k, chi2X->at(k));
+			hSGChi2Y->Fill(k, chi2Y->at(k));
+		}
+		if(i % reportFreq == 0)
+			cout << "Processing event " << i << endl;
+	}
+
+	cSGChi2->cd(1);
+	hSGChi2X->GetXaxis()->SetTitle("Slide Pos #");
+	hSGChi2X->GetYaxis()->SetTitle("X #Chi^{2}");
+	hSGChi2X->Draw();
+	cSGChi2->cd(2);
+	hSGChi2Y->GetXaxis()->SetTitle("Slide Pos #");
+	hSGChi2Y->GetYaxis()->SetTitle("Y #Chi^{2}");
+	hSGChi2Y->Draw();
+	delete tSelection;
+	fTemp->Close();
+	delete chi2X;
+	delete chi2Y;
+	rootFile->cd();
+	TObjArray *ret = new TObjArray();
+	ret->Add(hSGChi2X);
+	ret->Add(hSGChi2Y);
+	return ret;
+}
+
+TObjArray* COINCRun::PlotSGChi2(TCut inCut, double xMin, double xMax)
+{
+	TCanvas *cSGChi2;
+	TH1D *hSGChi2X;
+	TH1D *hSGChi2Y;
+	string cName, cDesc, histName[2];
+	string cutName = "_" + (string)inCut.GetName();
+	cName = cPrefix + "cSGChi2" + cutName;
+	cDesc = "Sliding Gauss #Chi^{2}";
+	histName[0] = hPrefix + "hSGChi2X" + cutName;
+	histName[1] = hPrefix + "hSGChi2Y" + cutName;
+	
+	if((cSGChi2 = GetCanvas(cName.c_str())) == 0)
+	{
+		cSGChi2 = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 1080);
+		cSGChi2->Divide(1,2);
+	}
+	if((hSGChi2X = (TH1D*)GetHistogram(histName[0])) == 0)
+	{
+		hSGChi2X = new TH1D(histName[0].c_str(), "X #Chi^{2}", xMax-xMin, xMin, xMax);
+		hSGChi2Y = new TH1D(histName[1].c_str(), "Y #Chi^{2}", xMax-xMin, xMin, xMax);
+	}
+	else
+	{
+		cout << "Histograms found in gDirectory." << endl;
+		hSGChi2Y = (TH1D*)GetHistogram(histName[1]);
+		cSGChi2->cd(1);
+		hSGChi2X->Draw();
+		cSGChi2->cd(2);
+		hSGChi2Y->Draw();
+		TObjArray *ret = new TObjArray();
+		ret->Add(hSGChi2X);
+		ret->Add(hSGChi2Y);
+		return ret;
+	}
+	// Make a temp tree to hold the selection
+	vector<double> *chi2X = new vector<double>();
+	vector<double> *chi2Y = new vector<double>();
+	aTree->SetBranchAddress("chi2GX98Pos", &chi2X);
+	aTree->SetBranchAddress("chi2GY98Pos", &chi2Y);
+	cout << "Copying tree using selection. This may take a moment." << endl;
+	TFile *fTemp = new TFile("plotsgchi2_temp.root", "RECREATE");
+	TTree *tSelection = eventTree->CopyTree(inCut);
+	cout << tSelection->GetEntries() << " events selected based on your cut." << endl;
+	rootFile->cd();
+	for(int i=0;i < tSelection->GetEntries();i++)
+	{
+		tSelection->GetEntry(i);
+		for(size_t k=0;k < chi2X->size();k++)
+		{
+			hSGChi2X->Fill(chi2X->at(k));
+			hSGChi2Y->Fill(chi2Y->at(k));
+		}
+		if(i % reportFreq == 0)
+			cout << "Processing event " << i << endl;
+	}
+
+	cSGChi2->cd(1);
+	hSGChi2X->GetXaxis()->SetTitle("X #Chi^{2}");
+	hSGChi2X->GetYaxis()->SetTitle("Counts");
+	hSGChi2X->Draw();
+	cSGChi2->cd(2);
+	hSGChi2Y->GetXaxis()->SetTitle("Y #Chi^{2}");
+	hSGChi2Y->GetYaxis()->SetTitle("Counts");
+	hSGChi2Y->Draw();
+	delete tSelection;
+	fTemp->Close();
+	delete chi2X;
+	delete chi2Y;
+	rootFile->cd();
+	TObjArray *ret = new TObjArray();
+	ret->Add(hSGChi2X);
+	ret->Add(hSGChi2Y);
+	return ret;
+}
+
+TObjArray* COINCRun::PlotSGMinChi2(TCut inCut, double xMin, double xMax)
+{
+	TCanvas *cSGChi2;
+	TH1D *hSGChi2X;
+	TH1D *hSGChi2Y;
+	string cName, cDesc, histName[2];
+	string cutName = "_" + (string)inCut.GetName();
+	cName = cPrefix + "cSGMinChi2" + cutName;
+	cDesc = "Sliding Gauss Min #Chi^{2}";
+	histName[0] = hPrefix + "hSGMinChi2X" + cutName;
+	histName[1] = hPrefix + "hSGMinChi2Y" + cutName;
+	
+	if((cSGChi2 = GetCanvas(cName.c_str())) == 0)
+	{
+		cSGChi2 = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 1080);
+		cSGChi2->Divide(1,2);
+	}
+	if((hSGChi2X = (TH1D*)GetHistogram(histName[0])) == 0)
+	{
+		hSGChi2X = new TH1D(histName[0].c_str(), "X Min #Chi^{2}", xMax-xMin, xMin, xMax);
+		hSGChi2Y = new TH1D(histName[1].c_str(), "Y Min #Chi^{2}", xMax-xMin, xMin, xMax);
+	}
+	else
+	{
+		cout << "Histograms found in gDirectory." << endl;
+		hSGChi2Y = (TH1D*)GetHistogram(histName[1]);
+		cSGChi2->cd(1);
+		hSGChi2X->Draw();
+		cSGChi2->cd(2);
+		hSGChi2Y->Draw();
+		TObjArray *ret = new TObjArray();
+		ret->Add(hSGChi2X);
+		ret->Add(hSGChi2Y);
+		return ret;
+	}
+	// Make a temp tree to hold the selection
+	vector<double> *chi2X = new vector<double>();
+	vector<double> *chi2Y = new vector<double>();
+	aTree->SetBranchAddress("chi2GX98Pos", &chi2X);
+	aTree->SetBranchAddress("chi2GY98Pos", &chi2Y);
+	cout << "Copying tree using selection. This may take a moment." << endl;
+	TFile *fTemp = new TFile("plotsgminchi2_temp.root", "RECREATE");
+	TTree *tSelection = eventTree->CopyTree(inCut);
+	cout << tSelection->GetEntries() << " events selected based on your cut." << endl;
+	rootFile->cd();
+	for(int i=0;i < tSelection->GetEntries();i++)
+	{
+		double minX = 5e10;
+		double minY = 5e10;
+		tSelection->GetEntry(i);
+		for(size_t k=0;k < chi2X->size();k++)
+		{
+			if(chi2X->at(k) < minX)
+				minX = chi2X->at(k);
+			if(chi2Y->at(k) < minY)
+				minY = chi2Y->at(k);
+		}
+		hSGChi2X->Fill(minX);
+		hSGChi2Y->Fill(minY);
+		if(i % reportFreq == 0)
+			cout << "Processing event " << i << endl;
+	}
+
+	cSGChi2->cd(1);
+	hSGChi2X->GetXaxis()->SetTitle("X Min #Chi^{2}");
+	hSGChi2X->GetYaxis()->SetTitle("Counts");
+	hSGChi2X->Draw();
+	cSGChi2->cd(2);
+	hSGChi2Y->GetXaxis()->SetTitle("Y Min #Chi^{2}");
+	hSGChi2Y->GetYaxis()->SetTitle("Counts");
+	hSGChi2Y->Draw();
+	delete tSelection;
+	fTemp->Close();
+	delete chi2X;
+	delete chi2Y;
+	rootFile->cd();
+	TObjArray *ret = new TObjArray();
+	ret->Add(hSGChi2X);
+	ret->Add(hSGChi2Y);
+	return ret;
+}
+
+TObjArray* COINCRun::PlotSGPosProj(TCut inCut, string plotArgsX, string plotArgsY)
+{
+	TCanvas *cSGPosProj;
+	TH1D *hX;
+	TH1D *hY;
+	string cName, cDesc, histName[2];
+	string cutName = "_" + (string)inCut.GetName();
+	cName = cPrefix + "cPlotSGPosProj" + cutName;
+	cDesc = "Sliding Gauss Projections";
+	histName[0] = hPrefix + "hSGPosProjX" + cutName;
+	histName[1] = hPrefix + "hSGPosProjY" + cutName;
+
+	// Check for the TCanvas object existing. Not in gDirectory, because that would make sense
+	if((cSGPosProj = GetCanvas(cName.c_str())) == 0)
+	{
+		cSGPosProj = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 1080);
+		cSGPosProj->Divide(1, 2);
+	}
+
+	// Make sure we don't have the histograms already available to us. Closing the canvas window
+	// does not delete the histograms, no need to recreate them if they exist
+	// found - will need to process
+	if(!(hX = (TH1D*)GetHistogram(histName[0])) == 0)
+	{
+		cout << "Histograms found in gDirectory. Delete them or change the names to redraw." << endl;
+		hY = (TH1D*)GetHistogram(histName[1]);
+		cSGPosProj->cd(1);
+		hX->Draw();
+		cSGPosProj->cd(2);
+		hY->Draw();
+		TObjArray *ret = new TObjArray();
+		ret->Add(hX);
+		ret->Add(hY);
+  	return ret;
+	}
+
+	// Fill the histograms
+	int nPlotted = 0;
+	cSGPosProj->cd(1);
+	// Scale GE energy
+	string toDraw = "gaussX98Pos >> " + histName[0] + plotArgsX;
+	nPlotted = eventTree->Draw(toDraw.c_str(), inCut, "NBQ");
+	hX = (TH1D*)GetHistogram(histName[0]);
+	hX->SetTitle("SG X Projection");
+  hX->GetXaxis()->SetTitle("SGX Position (mm)");
+  hX->GetYaxis()->SetTitle("Counts");
+	hX->Draw();
+	cout << nPlotted << " drawn to X projection." << endl;
+	cSGPosProj->cd(2);
+	toDraw = "gaussY98Pos >> " + histName[1] + plotArgsY;
+	nPlotted = eventTree->Draw(toDraw.c_str(), inCut, "NBQ");
+	hY = (TH1D*)GetHistogram(histName[1]);
+	hY->SetTitle("SG Y Projection");
+	hY->GetXaxis()->SetTitle("SGY Position (mm)");
+	hY->GetYaxis()->SetTitle("Counts");
+	hY->Draw();
+	cout << nPlotted << " drawn to LYSO histogram." << endl;
+	TObjArray *ret = new TObjArray();
+	ret->Add(hX);
+	ret->Add(hY);
+  return ret;
+}
+
 TH2D* COINCRun::PlotSLPosMap(TCut inCut, string plotArgs)
 {	
 	TCanvas *cSLPosMap;
@@ -559,4 +861,301 @@ TH2D* COINCRun::PlotSLPosMap(TCut inCut, string plotArgs)
 	hSLPos->Draw("colz");
 	cout << nPlotted << " events plotted based on cut." << endl;
 	return hSLPos;
+}
+
+TObjArray* COINCRun::PlotSLChi2ByPos(TCut inCut)
+{
+	TCanvas *cSGChi2;
+	TH1D *hSGChi2X;
+	TH1D *hSGChi2Y;
+	string cName, cDesc, histName[2];
+	string cutName = "_" + (string)inCut.GetName();
+	cName = cPrefix + "cSLChi2Pos" + cutName;
+	cDesc = "Sliding Lerche #Chi^{2}";
+	histName[0] = hPrefix + "hSLChi2XPos" + cutName;
+	histName[1] = hPrefix + "hSLChi2YPos" + cutName;
+	
+	if((cSGChi2 = GetCanvas(cName.c_str())) == 0)
+	{
+		cSGChi2 = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 1080);
+		cSGChi2->Divide(1,2);
+	}
+	if((hSGChi2X = (TH1D*)GetHistogram(histName[0])) == 0)
+	{
+		hSGChi2X = new TH1D(histName[0].c_str(), "X #Chi^{2}", 98, 0.0, 98.0);
+		hSGChi2Y = new TH1D(histName[1].c_str(), "Y #Chi^{2}", 98, 0.0, 98.0);
+	}
+	else
+	{
+		cout << "Histograms found in gDirectory." << endl;
+		hSGChi2Y = (TH1D*)GetHistogram(histName[1]);
+		cSGChi2->cd(1);
+		hSGChi2X->Draw();
+		cSGChi2->cd(2);
+		hSGChi2Y->Draw();
+		TObjArray *ret = new TObjArray();
+		ret->Add(hSGChi2X);
+		ret->Add(hSGChi2Y);
+		return ret;
+	}
+	// Make a temp tree to hold the selection
+	vector<double> *chi2X = new vector<double>();
+	vector<double> *chi2Y = new vector<double>();
+	aTree->SetBranchAddress("chi2LX98Pos", &chi2X);
+	aTree->SetBranchAddress("chi2LY98Pos", &chi2Y);
+	cout << "Copying tree using selection. This may take a moment." << endl;
+	TFile *fTemp = new TFile("plotslchi2pos_temp.root", "RECREATE");
+	TTree *tSelection = eventTree->CopyTree(inCut);
+	cout << tSelection->GetEntries() << " events selected based on your cut." << endl;
+	rootFile->cd();
+	for(int i=0;i < tSelection->GetEntries();i++)
+	{
+		tSelection->GetEntry(i);
+		for(size_t k=0;k < chi2X->size();k++)
+		{
+			hSGChi2X->Fill(k, chi2X->at(k));
+			hSGChi2Y->Fill(k, chi2Y->at(k));
+		}
+		if(i % reportFreq == 0)
+			cout << "Processing event " << i << endl;
+	}
+
+	cSGChi2->cd(1);
+	hSGChi2X->GetXaxis()->SetTitle("Slide Pos #");
+	hSGChi2X->GetYaxis()->SetTitle("X #Chi^{2}");
+	hSGChi2X->Draw();
+	cSGChi2->cd(2);
+	hSGChi2Y->GetXaxis()->SetTitle("Slide Pos #");
+	hSGChi2Y->GetYaxis()->SetTitle("Y #Chi^{2}");
+	hSGChi2Y->Draw();
+	delete tSelection;
+	fTemp->Close();
+	delete chi2X;
+	delete chi2Y;
+	rootFile->cd();
+	TObjArray *ret = new TObjArray();
+	ret->Add(hSGChi2X);
+	ret->Add(hSGChi2Y);
+	return ret;
+}
+
+TObjArray* COINCRun::PlotSLChi2(TCut inCut, double xMin, double xMax)
+{
+	TCanvas *cSGChi2;
+	TH1D *hSGChi2X;
+	TH1D *hSGChi2Y;
+	string cName, cDesc, histName[2];
+	string cutName = "_" + (string)inCut.GetName();
+	cName = cPrefix + "cSLChi2" + cutName;
+	cDesc = "Sliding Lerche #Chi^{2}";
+	histName[0] = hPrefix + "hSLChi2X" + cutName;
+	histName[1] = hPrefix + "hSLChi2Y" + cutName;
+	
+	if((cSGChi2 = GetCanvas(cName.c_str())) == 0)
+	{
+		cSGChi2 = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 1080);
+		cSGChi2->Divide(1,2);
+	}
+	if((hSGChi2X = (TH1D*)GetHistogram(histName[0])) == 0)
+	{
+		hSGChi2X = new TH1D(histName[0].c_str(), "X #Chi^{2}", xMax-xMin, xMin, xMax);
+		hSGChi2Y = new TH1D(histName[1].c_str(), "Y #Chi^{2}", xMax-xMin, xMin, xMax);
+	}
+	else
+	{
+		cout << "Histograms found in gDirectory." << endl;
+		hSGChi2Y = (TH1D*)GetHistogram(histName[1]);
+		cSGChi2->cd(1);
+		hSGChi2X->Draw();
+		cSGChi2->cd(2);
+		hSGChi2Y->Draw();
+		TObjArray *ret = new TObjArray();
+		ret->Add(hSGChi2X);
+		ret->Add(hSGChi2Y);
+		return ret;
+	}
+	// Make a temp tree to hold the selection
+	vector<double> *chi2X = new vector<double>();
+	vector<double> *chi2Y = new vector<double>();
+	aTree->SetBranchAddress("chi2LX98Pos", &chi2X);
+	aTree->SetBranchAddress("chi2LY98Pos", &chi2Y);
+	cout << "Copying tree using selection. This may take a moment." << endl;
+	TFile *fTemp = new TFile("plotslchi2_temp.root", "RECREATE");
+	TTree *tSelection = eventTree->CopyTree(inCut);
+	cout << tSelection->GetEntries() << " events selected based on your cut." << endl;
+	rootFile->cd();
+	for(int i=0;i < tSelection->GetEntries();i++)
+	{
+		tSelection->GetEntry(i);
+		for(size_t k=0;k < chi2X->size();k++)
+		{
+			hSGChi2X->Fill(chi2X->at(k));
+			hSGChi2Y->Fill(chi2Y->at(k));
+		}
+		if(i % reportFreq == 0)
+			cout << "Processing event " << i << endl;
+	}
+
+	cSGChi2->cd(1);
+	hSGChi2X->GetXaxis()->SetTitle("X #Chi^{2}");
+	hSGChi2X->GetYaxis()->SetTitle("Counts");
+	hSGChi2X->Draw();
+	cSGChi2->cd(2);
+	hSGChi2Y->GetXaxis()->SetTitle("Y #Chi^{2}");
+	hSGChi2Y->GetYaxis()->SetTitle("Counts");
+	hSGChi2Y->Draw();
+	delete tSelection;
+	fTemp->Close();
+	delete chi2X;
+	delete chi2Y;
+	rootFile->cd();
+	TObjArray *ret = new TObjArray();
+	ret->Add(hSGChi2X);
+	ret->Add(hSGChi2Y);
+	return ret;
+}
+
+TObjArray* COINCRun::PlotSLMinChi2(TCut inCut, double xMin, double xMax)
+{
+	TCanvas *cSGChi2;
+	TH1D *hSGChi2X;
+	TH1D *hSGChi2Y;
+	string cName, cDesc, histName[2];
+	string cutName = "_" + (string)inCut.GetName();
+	cName = cPrefix + "cSLMinChi2" + cutName;
+	cDesc = "Sliding Lerche Min #Chi^{2}";
+	histName[0] = hPrefix + "hSLMinChi2X" + cutName;
+	histName[1] = hPrefix + "hSLMinChi2Y" + cutName;
+	
+	if((cSGChi2 = GetCanvas(cName.c_str())) == 0)
+	{
+		cSGChi2 = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 1080);
+		cSGChi2->Divide(1,2);
+	}
+	if((hSGChi2X = (TH1D*)GetHistogram(histName[0])) == 0)
+	{
+		hSGChi2X = new TH1D(histName[0].c_str(), "X Min #Chi^{2}", xMax-xMin, xMin, xMax);
+		hSGChi2Y = new TH1D(histName[1].c_str(), "Y Min #Chi^{2}", xMax-xMin, xMin, xMax);
+	}
+	else
+	{
+		cout << "Histograms found in gDirectory." << endl;
+		hSGChi2Y = (TH1D*)GetHistogram(histName[1]);
+		cSGChi2->cd(1);
+		hSGChi2X->Draw();
+		cSGChi2->cd(2);
+		hSGChi2Y->Draw();
+		TObjArray *ret = new TObjArray();
+		ret->Add(hSGChi2X);
+		ret->Add(hSGChi2Y);
+		return ret;
+	}
+	// Make a temp tree to hold the selection
+	vector<double> *chi2X = new vector<double>();
+	vector<double> *chi2Y = new vector<double>();
+	aTree->SetBranchAddress("chi2LX98Pos", &chi2X);
+	aTree->SetBranchAddress("chi2LY98Pos", &chi2Y);
+	cout << "Copying tree using selection. This may take a moment." << endl;
+	TFile *fTemp = new TFile("plotslminchi2_temp.root", "RECREATE");
+	TTree *tSelection = eventTree->CopyTree(inCut);
+	cout << tSelection->GetEntries() << " events selected based on your cut." << endl;
+	rootFile->cd();
+	for(int i=0;i < tSelection->GetEntries();i++)
+	{
+		double minX = 5e10;
+		double minY = 5e10;
+		tSelection->GetEntry(i);
+		for(size_t k=0;k < chi2X->size();k++)
+		{
+			if(chi2X->at(k) < minX)
+				minX = chi2X->at(k);
+			if(chi2Y->at(k) < minY)
+				minY = chi2Y->at(k);
+		}
+		hSGChi2X->Fill(minX);
+		hSGChi2Y->Fill(minY);
+		if(i % reportFreq == 0)
+			cout << "Processing event " << i << endl;
+	}
+
+	cSGChi2->cd(1);
+	hSGChi2X->GetXaxis()->SetTitle("X Min #Chi^{2}");
+	hSGChi2X->GetYaxis()->SetTitle("Counts");
+	hSGChi2X->Draw();
+	cSGChi2->cd(2);
+	hSGChi2Y->GetXaxis()->SetTitle("Y Min #Chi^{2}");
+	hSGChi2Y->GetYaxis()->SetTitle("Counts");
+	hSGChi2Y->Draw();
+	delete tSelection;
+	fTemp->Close();
+	delete chi2X;
+	delete chi2Y;
+	rootFile->cd();
+	TObjArray *ret = new TObjArray();
+	ret->Add(hSGChi2X);
+	ret->Add(hSGChi2Y);
+	return ret;
+}
+
+TObjArray* COINCRun::PlotSLPosProj(TCut inCut, string plotArgsX, string plotArgsY)
+{
+	TCanvas *cSGPosProj;
+	TH1D *hX;
+	TH1D *hY;
+	string cName, cDesc, histName[2];
+	string cutName = "_" + (string)inCut.GetName();
+	cName = cPrefix + "cPlotSLPosProj" + cutName;
+	cDesc = "Sliding Lerche Projections";
+	histName[0] = hPrefix + "hSLPosProjX" + cutName;
+	histName[1] = hPrefix + "hSLPosProjY" + cutName;
+
+	// Check for the TCanvas object existing. Not in gDirectory, because that would make sense
+	if((cSGPosProj = GetCanvas(cName.c_str())) == 0)
+	{
+		cSGPosProj = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 1080);
+		cSGPosProj->Divide(1, 2);
+	}
+
+	// Make sure we don't have the histograms already available to us. Closing the canvas window
+	// does not delete the histograms, no need to recreate them if they exist
+	// found - will need to process
+	if(!(hX = (TH1D*)GetHistogram(histName[0])) == 0)
+	{
+		cout << "Histograms found in gDirectory. Delete them or change the names to redraw." << endl;
+		hY = (TH1D*)GetHistogram(histName[1]);
+		cSGPosProj->cd(1);
+		hX->Draw();
+		cSGPosProj->cd(2);
+		hY->Draw();
+		TObjArray *ret = new TObjArray();
+		ret->Add(hX);
+		ret->Add(hY);
+  	return ret;
+	}
+
+	// Fill the histograms
+	int nPlotted = 0;
+	cSGPosProj->cd(1);
+	// Scale GE energy
+	string toDraw = "lercheX98Pos >> " + histName[0] + plotArgsX;
+	nPlotted = eventTree->Draw(toDraw.c_str(), inCut, "NBQ");
+	hX = (TH1D*)GetHistogram(histName[0]);
+	hX->SetTitle("SL X Projection");
+  hX->GetXaxis()->SetTitle("SLX Position (mm)");
+  hX->GetYaxis()->SetTitle("Counts");
+	hX->Draw();
+	cout << nPlotted << " drawn to X projection." << endl;
+	cSGPosProj->cd(2);
+	toDraw = "lercheY98Pos >> " + histName[1] + plotArgsY;
+	nPlotted = eventTree->Draw(toDraw.c_str(), inCut, "NBQ");
+	hY = (TH1D*)GetHistogram(histName[1]);
+	hY->SetTitle("SL Y Projection");
+	hY->GetXaxis()->SetTitle("SLY Position (mm)");
+	hY->GetYaxis()->SetTitle("Counts");
+	hY->Draw();
+	cout << nPlotted << " drawn to Y projection." << endl;
+	TObjArray *ret = new TObjArray();
+	ret->Add(hX);
+	ret->Add(hY);
+  return ret;
 }
