@@ -41,17 +41,6 @@ COINCRun::COINCRun(string newFileName): PACSSRun(newFileName)
 		rootFile->cd();
 		eventTree->AddFriend(wfDiffTree);
 	}
-	// Reset waveform flag
-	aName = fileName;
-	aName.erase(aName.size()-5, 5); // erase the last 5 characters (.root)
-	aName += "_reset.root";
-	resetFile = new TFile(aName.c_str(), "READ");
-	if(resetFile)
-	{
-		resetTree = (TTree*)resetFile->Get("ResetFlags");
-		rootFile->cd();
-		eventTree->AddFriend(resetTree);
-	}
 
   // How many events? iEvent = 0 from PACSSRun initialization
   numEvents = eventTree->GetEntries();
@@ -68,8 +57,6 @@ COINCRun::~COINCRun()
 		posFile->Close();
 	if(wfDiffFile)
 		wfDiffFile->Close();
-	if(resetFile)
-		resetFile->Close();
 	rootFile->cd();
 	rootFile->Close();
 }
@@ -778,6 +765,8 @@ TObjArray* COINCRun::PlotSGChi2ByPos(TCut inCut)
 	hSGChi2Y->Draw();
 	delete tSelection;
 	fTemp->Close();
+	posTree->ResetBranchAddress(posTree->GetBranch("chi2GX98Pos"));
+	posTree->ResetBranchAddress(posTree->GetBranch("chi2GY98Pos"));
 	delete chi2X;
 	delete chi2Y;
 	rootFile->cd();
@@ -854,6 +843,8 @@ TObjArray* COINCRun::PlotSGChi2(TCut inCut, double xMin, double xMax)
 	hSGChi2Y->Draw();
 	delete tSelection;
 	fTemp->Close();
+	posTree->ResetBranchAddress(posTree->GetBranch("chi2GX98Pos"));
+	posTree->ResetBranchAddress(posTree->GetBranch("chi2GY98Pos"));
 	delete chi2X;
 	delete chi2Y;
 	rootFile->cd();
@@ -936,6 +927,8 @@ TObjArray* COINCRun::PlotSGMinChi2(TCut inCut, double xMin, double xMax)
 	hSGChi2Y->Draw();
 	delete tSelection;
 	fTemp->Close();
+	posTree->ResetBranchAddress(posTree->GetBranch("chi2GX98Pos"));
+	posTree->ResetBranchAddress(posTree->GetBranch("chi2GY98Pos"));
 	delete chi2X;
 	delete chi2Y;
 	rootFile->cd();
@@ -1105,6 +1098,8 @@ TObjArray* COINCRun::PlotSLChi2ByPos(TCut inCut)
 	hSGChi2Y->Draw();
 	delete tSelection;
 	fTemp->Close();
+	posTree->ResetBranchAddress(posTree->GetBranch("chi2LX98Pos"));
+	posTree->ResetBranchAddress(posTree->GetBranch("chi2LY98Pos"));
 	delete chi2X;
 	delete chi2Y;
 	rootFile->cd();
@@ -1181,6 +1176,8 @@ TObjArray* COINCRun::PlotSLChi2(TCut inCut, double xMin, double xMax)
 	hSGChi2Y->Draw();
 	delete tSelection;
 	fTemp->Close();
+	posTree->ResetBranchAddress(posTree->GetBranch("chi2LX98Pos"));
+	posTree->ResetBranchAddress(posTree->GetBranch("chi2LY98Pos"));
 	delete chi2X;
 	delete chi2Y;
 	rootFile->cd();
@@ -1263,6 +1260,8 @@ TObjArray* COINCRun::PlotSLMinChi2(TCut inCut, double xMin, double xMax)
 	hSGChi2Y->Draw();
 	delete tSelection;
 	fTemp->Close();
+	posTree->ResetBranchAddress(posTree->GetBranch("chi2LX98Pos"));
+	posTree->ResetBranchAddress(posTree->GetBranch("chi2LY98Pos"));
 	delete chi2X;
 	delete chi2Y;
 	rootFile->cd();
@@ -1333,4 +1332,50 @@ TObjArray* COINCRun::PlotSLPosProj(TCut inCut, string plotArgsX, string plotArgs
 	ret->Add(hX);
 	ret->Add(hY);
   return ret;
+}
+
+TH2D* COINCRun::PlotIMaxOverEVsE(TCut inCut, string plotArgs)
+{
+	TCanvas *cAOverE;
+	TH2D *hAOverE;
+	string cName, cDesc, histName;
+	string cutName = "_" + (string)inCut.GetName();
+	cName = cPrefix + "cAOverEMap" + cutName;
+	cDesc = "IMax/E vs E";
+	histName = hPrefix + "hAOverEMap" + cutName;
+	
+	if((cAOverE = GetCanvas(cName.c_str())) == 0)
+		cAOverE = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 600);
+	if((hAOverE = (TH2D*)GetHistogram(histName)) == 0)
+	{
+		hAOverE = new TH2D();
+		hAOverE->SetName(histName.c_str());
+		hAOverE->SetTitle("IMax/E vs E Map");
+		hAOverE->GetXaxis()->SetTitle("Energy (arb)");
+		hAOverE->GetYaxis()->SetTitle("IMax/E (arb)");
+	}
+	else
+	{
+		cout << "Histograms found in gDirectory." << endl;
+		cAOverE->cd();
+		hAOverE->Draw("colz");
+		return hAOverE;
+	}
+
+	// Make a temp tree to hold the selection
+	double IMax;
+	wfDiffTree->SetBranchAddress("IMax", &IMax);
+	cout << "Copying tree using selection. This may take a moment." << endl;
+	TFile *fTemp = new TFile("plotslminchi2_temp.root", "RECREATE");
+	TTree *tSelection = eventTree->CopyTree(inCut);
+	cout << tSelection->GetEntries() << " events selected based on your cut." << endl;
+	rootFile->cd();
+
+	string toDraw = "(IMax/energyGE):energyGE>>"+histName+plotArgs;
+	tSelection->Draw(toDraw.c_str(), inCut, "colz");
+	delete tSelection;
+	fTemp->Close();
+	rootFile->cd();
+	wfDiffTree->ResetBranchAddress(wfDiffTree->GetBranch("IMax"));
+	return hAOverE;
 }
