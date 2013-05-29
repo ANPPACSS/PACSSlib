@@ -473,7 +473,7 @@ TObjArray* COINCRun::PlotChargeProj(TCut inCut, bool gc)
 	vector<double> charge;
 	for(int i=0;i < tSelection->GetEntries();i++)
 	{
-		eventTree->GetEntry(i);
+		tSelection->GetEntry(i);
 		if(gc)
 			charge = event->GetChargeGC();
 		else

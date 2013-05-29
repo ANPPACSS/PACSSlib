@@ -26,6 +26,9 @@ class PACSSAnalysis
 		static void CalcSlidingLercheXYPosition(COINCEvent *event, double &xPos, vector<double> &xChi2, double &yPos, vector<double> &yChi2, int nSlidePos);
 		static void CalcSlidingLercheXYPosition(LYSOEvent *event, double &xPos, vector<double> &xChi2, double &yPos, vector<double> &yChi2, int nSlidePos);
 		static vector<double> SubtractBaseline(vector<double> aWave, int nSamples);
+		static double CalcFWHM(TH1D *hProjection);
+		static vector<double> DifferentiateWaveform(vector<double> aWave, int nBLSamples);
+		static double CalcIMax(vector<double> aCurrentWave);
 
 		// Useful other functions
 

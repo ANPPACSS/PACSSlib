@@ -21,7 +21,7 @@ LYSORun::LYSORun(string newFileName): PACSSRun(newFileName)
 	// Open the analysis file (hardcoded for now)
 	string aName = fileName;
 	aName.erase(aName.size()-5, 5); // erase the last 5 characters (.root)
-	aName += "_490pos.root";
+	aName += "_980pos.root";
 	aFile = new TFile(aName.c_str(), "READ");
 	aTree = (TTree*)aFile->Get("Analysis");
 	rootFile->cd();
@@ -268,7 +268,7 @@ TH2D* LYSORun::PlotSGPosMap(TCut inCut, string plotArgs)
 		hSGPos->Draw("colz");
 		return hSGPos;
 	}
-	string toDraw = "gaussY490Pos:gaussX490Pos >> " + histName + plotArgs;
+	string toDraw = "gaussY980Pos:gaussX980Pos >> " + histName + plotArgs;
 	int nPlotted = eventTree->Draw(toDraw.c_str(), inCut, "NBQ");
 	hSGPos = (TH2D*)GetHistogram(histName);
 	hSGPos->SetTitle("Sliding Gauss Position Map");
@@ -317,8 +317,8 @@ TObjArray* LYSORun::PlotSGChi2ByPos(TCut inCut)
 	// Make a temp tree to hold the selection
 	vector<double> *chi2X = new vector<double>();
 	vector<double> *chi2Y = new vector<double>();
-	aTree->SetBranchAddress("chi2GX490Pos", &chi2X);
-	aTree->SetBranchAddress("chi2GY490Pos", &chi2Y);
+	aTree->SetBranchAddress("chi2GX980Pos", &chi2X);
+	aTree->SetBranchAddress("chi2GY980Pos", &chi2Y);
 	cout << "Copying tree using selection. This may take a moment." << endl;
 	TFile *fTemp = new TFile("plotsgchi2pos_temp.root", "RECREATE");
 	TTree *tSelection = eventTree->CopyTree(inCut);
@@ -396,8 +396,8 @@ TObjArray* LYSORun::PlotSGChi2(TCut inCut, int nBin, double xMin, double xMax)
 	// Make a temp tree to hold the selection
 	vector<double> *chi2X = new vector<double>();
 	vector<double> *chi2Y = new vector<double>();
-	aTree->SetBranchAddress("chi2GX490Pos", &chi2X);
-	aTree->SetBranchAddress("chi2GY490Pos", &chi2Y);
+	aTree->SetBranchAddress("chi2GX980Pos", &chi2X);
+	aTree->SetBranchAddress("chi2GY980Pos", &chi2Y);
 	cout << "Copying tree using selection. This may take a moment." << endl;
 	TFile *fTemp = new TFile("plotsgchi2_temp.root", "RECREATE");
 	TTree *tSelection = eventTree->CopyTree(inCut);
@@ -475,8 +475,8 @@ TObjArray* LYSORun::PlotSGMinChi2(TCut inCut, int nBin, double xMin, double xMax
 	// Make a temp tree to hold the selection
 	vector<double> *chi2X = new vector<double>();
 	vector<double> *chi2Y = new vector<double>();
-	aTree->SetBranchAddress("chi2GX490Pos", &chi2X);
-	aTree->SetBranchAddress("chi2GY490Pos", &chi2Y);
+	aTree->SetBranchAddress("chi2GX980Pos", &chi2X);
+	aTree->SetBranchAddress("chi2GY980Pos", &chi2Y);
 	cout << "Copying tree using selection. This may take a moment." << endl;
 	TFile *fTemp = new TFile("plotsgminchi2_temp.root", "RECREATE");
 	TTree *tSelection = eventTree->CopyTree(inCut);
@@ -562,7 +562,7 @@ TObjArray* LYSORun::PlotSGPosProj(TCut inCut, string plotArgsX, string plotArgsY
 	int nPlotted = 0;
 	cSGPosProj->cd(1);
 	// Scale GE energy
-	string toDraw = "gaussX490Pos >> " + histName[0] + plotArgsX;
+	string toDraw = "gaussX980Pos >> " + histName[0] + plotArgsX;
 	nPlotted = eventTree->Draw(toDraw.c_str(), inCut, "NBQ");
 	hX = (TH1D*)GetHistogram(histName[0]);
 	hX->SetTitle("SG X Projection");
@@ -571,7 +571,7 @@ TObjArray* LYSORun::PlotSGPosProj(TCut inCut, string plotArgsX, string plotArgsY
 	hX->Draw();
 	cout << nPlotted << " drawn to X projection." << endl;
 	cSGPosProj->cd(2);
-	toDraw = "gaussY490Pos >> " + histName[1] + plotArgsY;
+	toDraw = "gaussY980Pos >> " + histName[1] + plotArgsY;
 	nPlotted = eventTree->Draw(toDraw.c_str(), inCut, "NBQ");
 	hY = (TH1D*)GetHistogram(histName[1]);
 	hY->SetTitle("SG Y Projection");
@@ -604,7 +604,7 @@ TH2D* LYSORun::PlotSLPosMap(TCut inCut, string plotArgs)
 		hSLPos->Draw("colz");
 		return hSLPos;
 	}
-	string toDraw = "lercheY490Pos:lercheX490Pos >> " + histName + plotArgs;
+	string toDraw = "lercheY980Pos:lercheX980Pos >> " + histName + plotArgs;
 	int nPlotted = eventTree->Draw(toDraw.c_str(), inCut, "NBQ");
 	hSLPos = (TH2D*)GetHistogram(histName);
 	hSLPos->SetTitle("Sliding Lerche Position Map");
@@ -653,8 +653,8 @@ TObjArray* LYSORun::PlotSLChi2ByPos(TCut inCut)
 	// Make a temp tree to hold the selection
 	vector<double> *chi2X = new vector<double>();
 	vector<double> *chi2Y = new vector<double>();
-	aTree->SetBranchAddress("chi2LX490Pos", &chi2X);
-	aTree->SetBranchAddress("chi2LY490Pos", &chi2Y);
+	aTree->SetBranchAddress("chi2LX980Pos", &chi2X);
+	aTree->SetBranchAddress("chi2LY980Pos", &chi2Y);
 	cout << "Copying tree using selection. This may take a moment." << endl;
 	TFile *fTemp = new TFile("plotslchi2pos_temp.root", "RECREATE");
 	TTree *tSelection = eventTree->CopyTree(inCut);
@@ -732,8 +732,8 @@ TObjArray* LYSORun::PlotSLChi2(TCut inCut, int nBin, double xMin, double xMax)
 	// Make a temp tree to hold the selection
 	vector<double> *chi2X = new vector<double>();
 	vector<double> *chi2Y = new vector<double>();
-	aTree->SetBranchAddress("chi2LX490Pos", &chi2X);
-	aTree->SetBranchAddress("chi2LY490Pos", &chi2Y);
+	aTree->SetBranchAddress("chi2LX980Pos", &chi2X);
+	aTree->SetBranchAddress("chi2LY980Pos", &chi2Y);
 	cout << "Copying tree using selection. This may take a moment." << endl;
 	TFile *fTemp = new TFile("plotslchi2_temp.root", "RECREATE");
 	TTree *tSelection = eventTree->CopyTree(inCut);
@@ -811,8 +811,8 @@ TObjArray* LYSORun::PlotSLMinChi2(TCut inCut, int nBin, double xMin, double xMax
 	// Make a temp tree to hold the selection
 	vector<double> *chi2X = new vector<double>();
 	vector<double> *chi2Y = new vector<double>();
-	aTree->SetBranchAddress("chi2LX490Pos", &chi2X);
-	aTree->SetBranchAddress("chi2LY490Pos", &chi2Y);
+	aTree->SetBranchAddress("chi2LX980Pos", &chi2X);
+	aTree->SetBranchAddress("chi2LY980Pos", &chi2Y);
 	cout << "Copying tree using selection. This may take a moment." << endl;
 	TFile *fTemp = new TFile("plotslminchi2_temp.root", "RECREATE");
 	TTree *tSelection = eventTree->CopyTree(inCut);
@@ -898,7 +898,7 @@ TObjArray* LYSORun::PlotSLPosProj(TCut inCut, string plotArgsX, string plotArgsY
 	int nPlotted = 0;
 	cSGPosProj->cd(1);
 	// Scale GE energy
-	string toDraw = "lercheX490Pos >> " + histName[0] + plotArgsX;
+	string toDraw = "lercheX980Pos >> " + histName[0] + plotArgsX;
 	nPlotted = eventTree->Draw(toDraw.c_str(), inCut, "NBQ");
 	hX = (TH1D*)GetHistogram(histName[0]);
 	hX->SetTitle("SL X Projection");
@@ -907,7 +907,7 @@ TObjArray* LYSORun::PlotSLPosProj(TCut inCut, string plotArgsX, string plotArgsY
 	hX->Draw();
 	cout << nPlotted << " drawn to X projection." << endl;
 	cSGPosProj->cd(2);
-	toDraw = "lercheY490Pos >> " + histName[1] + plotArgsY;
+	toDraw = "lercheY980Pos >> " + histName[1] + plotArgsY;
 	nPlotted = eventTree->Draw(toDraw.c_str(), inCut, "NBQ");
 	hY = (TH1D*)GetHistogram(histName[1]);
 	hY->SetTitle("SL Y Projection");
