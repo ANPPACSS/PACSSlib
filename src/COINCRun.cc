@@ -19,13 +19,45 @@ COINCRun::COINCRun(string newFileName): PACSSRun(newFileName)
   eventTree->SetBranchAddress("event", &event);
 
 	// Open the analysis file (hardcoded for now)
+	// Position analysis
 	string aName = fileName;
 	aName.erase(aName.size()-5, 5); // erase the last 5 characters (.root)
 	aName += "_98pos.root";
-	aFile = new TFile(aName.c_str(), "READ");
-	aTree = (TTree*)aFile->Get("Analysis");
-	rootFile->cd();
-	eventTree->AddFriend(aTree);
+	posFile = new TFile(aName.c_str(), "READ");
+	if(!posFile)
+		cout << aName << " was not found. Not loaded." << endl;
+	else
+	{
+		posTree = (TTree*)posFile->Get("Analysis");
+		rootFile->cd();
+		eventTree->AddFriend(posTree);
+	}
+	// Waveform analysis
+	aName = fileName;
+	aName.erase(aName.size()-5, 5); // erase the last 5 characters (.root)
+	aName += "_wfdiffimax.root";
+	wfDiffFile = new TFile(aName.c_str(), "READ");
+	if(!wfDiffFile)
+		cout << aName << " was not found. Not loaded." << endl;
+	else
+	{
+		wfDiffTree = (TTree*)wfDiffFile->Get("DiffWaveIMax");
+		rootFile->cd();
+		eventTree->AddFriend(wfDiffTree);
+	}
+	// Reset waveform flag
+	aName = fileName;
+	aName.erase(aName.size()-5, 5); // erase the last 5 characters (.root)
+	aName += "_reset.root";
+	resetFile = new TFile(aName.c_str(), "READ");
+	if(!resetFile)
+		cout << aName << " was not found. Not loaded." << endl;
+	else
+	{
+		resetTree = (TTree*)resetFile->Get("ResetFlags");
+		rootFile->cd();
+		eventTree->AddFriend(resetTree);
+	}
 
   // How many events? iEvent = 0 from PACSSRun initialization
   numEvents = eventTree->GetEntries();
@@ -38,8 +70,12 @@ COINCRun::~COINCRun()
 	// Clean up
 	delete event;
 
-	aFile->cd();
-	aFile->Close();
+	if(posFile)
+		posFile->Close();
+	if(wfDiffFile)
+		wfDiffFile->Close();
+	if(resetFile)
+		resetFile->Close();
 	rootFile->cd();
 	rootFile->Close();
 }
@@ -93,7 +129,7 @@ TCanvas* COINCRun::GetCanvas(string canvName)
 
 void COINCRun::SaveHistogram(string histName, string hFileName)
 {
-	if((hFileName == fileName) || (hFileName.c_str() == aFile->GetName()))
+	if(hFileName == fileName)
 	{
 		cout << "Input file name the same as data file name. You definitely don't want to do that!" << endl;
 		return;
@@ -574,8 +610,8 @@ TObjArray* COINCRun::PlotSGChi2ByPos(TCut inCut)
 	// Make a temp tree to hold the selection
 	vector<double> *chi2X = new vector<double>();
 	vector<double> *chi2Y = new vector<double>();
-	aTree->SetBranchAddress("chi2GX98Pos", &chi2X);
-	aTree->SetBranchAddress("chi2GY98Pos", &chi2Y);
+	posTree->SetBranchAddress("chi2GX98Pos", &chi2X);
+	posTree->SetBranchAddress("chi2GY98Pos", &chi2Y);
 	cout << "Copying tree using selection. This may take a moment." << endl;
 	TFile *fTemp = new TFile("plotsgchi2pos_temp.root", "RECREATE");
 	TTree *tSelection = eventTree->CopyTree(inCut);
@@ -650,8 +686,8 @@ TObjArray* COINCRun::PlotSGChi2(TCut inCut, double xMin, double xMax)
 	// Make a temp tree to hold the selection
 	vector<double> *chi2X = new vector<double>();
 	vector<double> *chi2Y = new vector<double>();
-	aTree->SetBranchAddress("chi2GX98Pos", &chi2X);
-	aTree->SetBranchAddress("chi2GY98Pos", &chi2Y);
+	posTree->SetBranchAddress("chi2GX98Pos", &chi2X);
+	posTree->SetBranchAddress("chi2GY98Pos", &chi2Y);
 	cout << "Copying tree using selection. This may take a moment." << endl;
 	TFile *fTemp = new TFile("plotsgchi2_temp.root", "RECREATE");
 	TTree *tSelection = eventTree->CopyTree(inCut);
@@ -726,8 +762,8 @@ TObjArray* COINCRun::PlotSGMinChi2(TCut inCut, double xMin, double xMax)
 	// Make a temp tree to hold the selection
 	vector<double> *chi2X = new vector<double>();
 	vector<double> *chi2Y = new vector<double>();
-	aTree->SetBranchAddress("chi2GX98Pos", &chi2X);
-	aTree->SetBranchAddress("chi2GY98Pos", &chi2Y);
+	posTree->SetBranchAddress("chi2GX98Pos", &chi2X);
+	posTree->SetBranchAddress("chi2GY98Pos", &chi2Y);
 	cout << "Copying tree using selection. This may take a moment." << endl;
 	TFile *fTemp = new TFile("plotsgminchi2_temp.root", "RECREATE");
 	TTree *tSelection = eventTree->CopyTree(inCut);
@@ -901,8 +937,8 @@ TObjArray* COINCRun::PlotSLChi2ByPos(TCut inCut)
 	// Make a temp tree to hold the selection
 	vector<double> *chi2X = new vector<double>();
 	vector<double> *chi2Y = new vector<double>();
-	aTree->SetBranchAddress("chi2LX98Pos", &chi2X);
-	aTree->SetBranchAddress("chi2LY98Pos", &chi2Y);
+	posTree->SetBranchAddress("chi2LX98Pos", &chi2X);
+	posTree->SetBranchAddress("chi2LY98Pos", &chi2Y);
 	cout << "Copying tree using selection. This may take a moment." << endl;
 	TFile *fTemp = new TFile("plotslchi2pos_temp.root", "RECREATE");
 	TTree *tSelection = eventTree->CopyTree(inCut);
@@ -977,8 +1013,8 @@ TObjArray* COINCRun::PlotSLChi2(TCut inCut, double xMin, double xMax)
 	// Make a temp tree to hold the selection
 	vector<double> *chi2X = new vector<double>();
 	vector<double> *chi2Y = new vector<double>();
-	aTree->SetBranchAddress("chi2LX98Pos", &chi2X);
-	aTree->SetBranchAddress("chi2LY98Pos", &chi2Y);
+	posTree->SetBranchAddress("chi2LX98Pos", &chi2X);
+	posTree->SetBranchAddress("chi2LY98Pos", &chi2Y);
 	cout << "Copying tree using selection. This may take a moment." << endl;
 	TFile *fTemp = new TFile("plotslchi2_temp.root", "RECREATE");
 	TTree *tSelection = eventTree->CopyTree(inCut);
@@ -1053,8 +1089,8 @@ TObjArray* COINCRun::PlotSLMinChi2(TCut inCut, double xMin, double xMax)
 	// Make a temp tree to hold the selection
 	vector<double> *chi2X = new vector<double>();
 	vector<double> *chi2Y = new vector<double>();
-	aTree->SetBranchAddress("chi2LX98Pos", &chi2X);
-	aTree->SetBranchAddress("chi2LY98Pos", &chi2Y);
+	posTree->SetBranchAddress("chi2LX98Pos", &chi2X);
+	posTree->SetBranchAddress("chi2LY98Pos", &chi2Y);
 	cout << "Copying tree using selection. This may take a moment." << endl;
 	TFile *fTemp = new TFile("plotslminchi2_temp.root", "RECREATE");
 	TTree *tSelection = eventTree->CopyTree(inCut);

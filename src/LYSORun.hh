@@ -10,6 +10,8 @@ class LYSORun: public PACSSRun
 	protected:
 		// Event type
 		LYSOEvent *event;
+		TFile *posFile;
+		TTree *posTree;
 
 	public:
 		LYSORun();

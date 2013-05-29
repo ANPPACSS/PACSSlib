@@ -19,14 +19,19 @@ LYSORun::LYSORun(string newFileName): PACSSRun(newFileName)
   eventTree->SetBranchAddress("event", &event);
 
 	// Open the analysis file (hardcoded for now)
+	// Position analysis
 	string aName = fileName;
 	aName.erase(aName.size()-5, 5); // erase the last 5 characters (.root)
-	aName += "_980pos.root";
-	aFile = new TFile(aName.c_str(), "READ");
-	aTree = (TTree*)aFile->Get("Analysis");
-	rootFile->cd();
-	eventTree->AddFriend(aTree);
-	aTree->AddFriend(eventTree);
+	aName += "_98pos.root";
+	posFile = new TFile(aName.c_str(), "READ");
+	if(!posFile)
+		cout << aName << " was not found. Not loaded." << endl;
+	else
+	{
+		posTree = (TTree*)posFile->Get("Analysis");
+		rootFile->cd();
+		eventTree->AddFriend(posTree);
+	}
 
   // How many events? iEvent = 0 from PACSSRun initialization
   numEvents = eventTree->GetEntries();
@@ -39,8 +44,8 @@ LYSORun::~LYSORun()
 	// Clean up
 	delete event;
 
-	aFile->cd();
-	aFile->Close();
+	posFile->cd();
+	posFile->Close();
 	rootFile->cd();
 	rootFile->Close();
 }
@@ -94,7 +99,7 @@ TCanvas* LYSORun::GetCanvas(string canvName)
 
 void LYSORun::SaveHistogram(string histName, string hFileName)
 {
-	if((hFileName == fileName) || (hFileName.c_str() == aFile->GetName()))
+	if((hFileName == fileName) || (hFileName.c_str() == posFile->GetName()))
 	{
 		cout << "Input file name the same as data file name. You definitely don't want to do that!" << endl;
 		return;
@@ -317,12 +322,12 @@ TObjArray* LYSORun::PlotSGChi2ByPos(TCut inCut)
 	// Make a temp tree to hold the selection
 	vector<double> *chi2X = new vector<double>();
 	vector<double> *chi2Y = new vector<double>();
-	aTree->SetBranchAddress("chi2GX980Pos", &chi2X);
-	aTree->SetBranchAddress("chi2GY980Pos", &chi2Y);
+	posTree->SetBranchAddress("chi2GX980Pos", &chi2X);
+	posTree->SetBranchAddress("chi2GY980Pos", &chi2Y);
 	cout << "Copying tree using selection. This may take a moment." << endl;
 	TFile *fTemp = new TFile("plotsgchi2pos_temp.root", "RECREATE");
 	TTree *tSelection = eventTree->CopyTree(inCut);
-	TTree *tSelection2 = aTree->CopyTree(inCut);
+	TTree *tSelection2 = posTree->CopyTree(inCut);
 	cout << tSelection->GetEntries() << " events selected based on your cut." << endl;
 	rootFile->cd();
 	for(int i=0;i < tSelection->GetEntries();i++)
@@ -396,12 +401,12 @@ TObjArray* LYSORun::PlotSGChi2(TCut inCut, int nBin, double xMin, double xMax)
 	// Make a temp tree to hold the selection
 	vector<double> *chi2X = new vector<double>();
 	vector<double> *chi2Y = new vector<double>();
-	aTree->SetBranchAddress("chi2GX980Pos", &chi2X);
-	aTree->SetBranchAddress("chi2GY980Pos", &chi2Y);
+	posTree->SetBranchAddress("chi2GX980Pos", &chi2X);
+	posTree->SetBranchAddress("chi2GY980Pos", &chi2Y);
 	cout << "Copying tree using selection. This may take a moment." << endl;
 	TFile *fTemp = new TFile("plotsgchi2_temp.root", "RECREATE");
 	TTree *tSelection = eventTree->CopyTree(inCut);
-	TTree *tSelection2 = aTree->CopyTree(inCut);
+	TTree *tSelection2 = posTree->CopyTree(inCut);
 	cout << tSelection->GetEntries() << " events selected based on your cut." << endl;
 	rootFile->cd();
 	for(int i=0;i < tSelection->GetEntries();i++)
@@ -475,12 +480,12 @@ TObjArray* LYSORun::PlotSGMinChi2(TCut inCut, int nBin, double xMin, double xMax
 	// Make a temp tree to hold the selection
 	vector<double> *chi2X = new vector<double>();
 	vector<double> *chi2Y = new vector<double>();
-	aTree->SetBranchAddress("chi2GX980Pos", &chi2X);
-	aTree->SetBranchAddress("chi2GY980Pos", &chi2Y);
+	posTree->SetBranchAddress("chi2GX980Pos", &chi2X);
+	posTree->SetBranchAddress("chi2GY980Pos", &chi2Y);
 	cout << "Copying tree using selection. This may take a moment." << endl;
 	TFile *fTemp = new TFile("plotsgminchi2_temp.root", "RECREATE");
 	TTree *tSelection = eventTree->CopyTree(inCut);
-	TTree *tSelection2 = aTree->CopyTree(inCut);
+	TTree *tSelection2 = posTree->CopyTree(inCut);
 	cout << tSelection->GetEntries() << " events selected based on your cut." << endl;
 	rootFile->cd();
 	for(int i=0;i < tSelection->GetEntries();i++)
@@ -653,12 +658,12 @@ TObjArray* LYSORun::PlotSLChi2ByPos(TCut inCut)
 	// Make a temp tree to hold the selection
 	vector<double> *chi2X = new vector<double>();
 	vector<double> *chi2Y = new vector<double>();
-	aTree->SetBranchAddress("chi2LX980Pos", &chi2X);
-	aTree->SetBranchAddress("chi2LY980Pos", &chi2Y);
+	posTree->SetBranchAddress("chi2LX980Pos", &chi2X);
+	posTree->SetBranchAddress("chi2LY980Pos", &chi2Y);
 	cout << "Copying tree using selection. This may take a moment." << endl;
 	TFile *fTemp = new TFile("plotslchi2pos_temp.root", "RECREATE");
 	TTree *tSelection = eventTree->CopyTree(inCut);
-	TTree *tSelection2 = aTree->CopyTree(inCut);
+	TTree *tSelection2 = posTree->CopyTree(inCut);
 	cout << tSelection->GetEntries() << " events selected based on your cut." << endl;
 	rootFile->cd();
 	for(int i=0;i < tSelection->GetEntries();i++)
@@ -732,12 +737,12 @@ TObjArray* LYSORun::PlotSLChi2(TCut inCut, int nBin, double xMin, double xMax)
 	// Make a temp tree to hold the selection
 	vector<double> *chi2X = new vector<double>();
 	vector<double> *chi2Y = new vector<double>();
-	aTree->SetBranchAddress("chi2LX980Pos", &chi2X);
-	aTree->SetBranchAddress("chi2LY980Pos", &chi2Y);
+	posTree->SetBranchAddress("chi2LX980Pos", &chi2X);
+	posTree->SetBranchAddress("chi2LY980Pos", &chi2Y);
 	cout << "Copying tree using selection. This may take a moment." << endl;
 	TFile *fTemp = new TFile("plotslchi2_temp.root", "RECREATE");
 	TTree *tSelection = eventTree->CopyTree(inCut);
-	TTree *tSelection2 = aTree->CopyTree(inCut);
+	TTree *tSelection2 = posTree->CopyTree(inCut);
 	cout << tSelection->GetEntries() << " events selected based on your cut." << endl;
 	rootFile->cd();
 	for(int i=0;i < tSelection->GetEntries();i++)
@@ -811,12 +816,12 @@ TObjArray* LYSORun::PlotSLMinChi2(TCut inCut, int nBin, double xMin, double xMax
 	// Make a temp tree to hold the selection
 	vector<double> *chi2X = new vector<double>();
 	vector<double> *chi2Y = new vector<double>();
-	aTree->SetBranchAddress("chi2LX980Pos", &chi2X);
-	aTree->SetBranchAddress("chi2LY980Pos", &chi2Y);
+	posTree->SetBranchAddress("chi2LX980Pos", &chi2X);
+	posTree->SetBranchAddress("chi2LY980Pos", &chi2Y);
 	cout << "Copying tree using selection. This may take a moment." << endl;
 	TFile *fTemp = new TFile("plotslminchi2_temp.root", "RECREATE");
 	TTree *tSelection = eventTree->CopyTree(inCut);
-	TTree *tSelection2 = aTree->CopyTree(inCut);
+	TTree *tSelection2 = posTree->CopyTree(inCut);
 	cout << tSelection->GetEntries() << " events selected based on your cut." << endl;
 	rootFile->cd();
 	for(int i=0;i < tSelection->GetEntries();i++)

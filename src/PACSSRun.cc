@@ -8,9 +8,7 @@ PACSSRun::PACSSRun()
 	cPrefix.clear();
 	hPrefix.clear();
 	rootFile = nullptr;
-	aFile = nullptr;
 	eventTree = nullptr;
-	aTree = nullptr;
 	iEvent = 0;
 	numEvents = 0;
 	SetReportFreq(10000);
@@ -28,9 +26,7 @@ PACSSRun::PACSSRun(string newFileName)
 
 	// These will be reset anyway, but just to be safe
 	rootFile = nullptr;
-	aFile = nullptr;
 	eventTree = nullptr;
-	aTree = nullptr;
 
 	iEvent = 0;
 	numEvents = 0;
