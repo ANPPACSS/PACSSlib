@@ -10,9 +10,7 @@ class PACSSRun: public TObject
 		string cPrefix;
 		string hPrefix;
 		TFile *rootFile;
-		TFile	*aFile;
 		TTree *eventTree;
-		TTree *aTree;
 		int 	 reportFreq;
 		int 	 iEvent;
 		int 	 numEvents;

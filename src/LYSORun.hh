@@ -10,6 +10,8 @@ class LYSORun: public PACSSRun
 	protected:
 		// Event type
 		LYSOEvent *event;
+		TFile *posFile;
+		TTree *posTree;
 
 	public:
 		LYSORun();
@@ -29,17 +31,16 @@ class LYSORun: public PACSSRun
 		// Plotting functions
 		TH2D*			 PlotChargeMap(TCut inCut="", bool gc=true);
 		TObjArray* PlotChargeProj(TCut inCut="", bool gc=true);
-		TH2D*			 PlotSGPosMap(TCut inCut="",string plotArgs="(98,0.0,49.0,98,0.0,49.0)");
+		TH2D*			 PlotSGPosMap(TCut inCut="",string plotArgs="(489,0.0,49.0,489,0.0,49.0)");
 		TObjArray* PlotSGChi2ByPos(TCut inCut="");
-		TObjArray* PlotSGChi2(TCut inCut, double xMin=0.0, double xMax=1e5);
-		TObjArray* PlotSGMinChi2(TCut inCut="",double xMin=0.0, double xMax=1e5);
-		TObjArray* PlotSGPosProj(TCut inCut="", string plotArgsX="(98,0.0,49.0)", string plotArgsY="(98,0.0,49.0)");
-		TH2D*			 PlotSLPosMap(TCut inCut="", string plotArgs="(98,0.0,49.0,98,0.0,49.0)");
+		TObjArray* PlotSGChi2(TCut inCut, int nBin=1000, double xMin=0.0, double xMax=1e5);
+		TObjArray* PlotSGMinChi2(TCut inCut="",int nBin=1000, double xMin=0.0, double xMax=1e5);
+		TObjArray* PlotSGPosProj(TCut inCut="", string plotArgsX="(489,0.0,49.0)", string plotArgsY="(489,0.0,49.0)");
+		TH2D*			 PlotSLPosMap(TCut inCut="", string plotArgs="(489,0.0,49.0,489,0.0,49.0)");
 		TObjArray* PlotSLChi2ByPos(TCut inCut="");
-		TObjArray* PlotSLChi2(TCut inCut, double xMin=0.0, double xMax=1e5);
-		TObjArray* PlotSLMinChi2(TCut inCut="",double xMin=0.0, double xMax=1e5);
-		TObjArray* PlotSLPosProj(TCut inCut="", string plotArgsX="(98,0.0,49.0)", string plotArgsY="(98,0.0,49.0)");
-		//void				PlotSLPosProj(TCut inCut="", string plotArgsX="(98,0.0,49.0)", string plotArgsY="(98,0.0,49.0)");
+		TObjArray* PlotSLChi2(TCut inCut, int nBin=1000, double xMin=0.0, double xMax=1e5);
+		TObjArray* PlotSLMinChi2(TCut inCut="",int nBin=1000, double xMin=0.0, double xMax=1e5);
+		TObjArray* PlotSLPosProj(TCut inCut="", string plotArgsX="(489,0.0,49.0)", string plotArgsY="(489,0.0,49.0)");
 
 		//void				PlotT1ToT2Dist(double T1=0.10, double T2=0.90, string plotArgs="(500, -5000.0, 5000.0)");
 		//void				PlotT10ToT90GMap(double eGELow=0.0, double eGEHigh=16383.0);

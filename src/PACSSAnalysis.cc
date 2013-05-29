@@ -297,3 +297,41 @@ vector<double> PACSSAnalysis::SubtractBaseline(vector<double> aWave, int nSample
 		retWave.push_back(aWave[i]-bl);
 	return retWave;
 }
+
+// Calculate the FWHM using a standard method. Make sure there are no reflections first!
+double PACSSAnalysis::CalcFWHM(TH1D *hProjection)
+{
+	int bin1 = hProjection->FindFirstBinAbove(hProjection->GetMaximum()/2.0);
+	int bin2 = hProjection->FindLastBinAbove(hProjection->GetMaximum()/2.0);
+	return hProjection->GetBinCenter(bin2) - hProjection->GetBinCenter(bin1);
+}
+
+vector<double> PACSSAnalysis::DifferentiateWaveform(vector<double> aWave, int nBLSamples)
+{
+	vector<double> wfDiff = aWave;
+	wfDiff = SubtractBaseline(wfDiff, nBLSamples);
+
+	double temp1 = 0.0;
+	double temp2 = wfDiff[0];
+	wfDiff[0] = 0.0;
+  // Loop over the waveform
+  for(size_t k=1;k < wfDiff.size();k++)
+  {
+    temp1 = wfDiff[k-1] + wfDiff[k] - temp2 - wfDiff[k-1]/10;
+    temp2 = wfDiff[k];
+    wfDiff[k] = temp1;
+  }
+
+	return wfDiff;
+}
+
+double PACSSAnalysis::CalcIMax(vector<double> aCurrentWave)
+{
+	double IMax = 0.0;
+	for(size_t i=0;i < aCurrentWave.size();i++)
+	{
+		if(fabs(aCurrentWave[i]) > fabs(IMax))
+			IMax = aCurrentWave[i];
+	}
+	return IMax;
+}
