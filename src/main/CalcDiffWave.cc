@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
 void CalcDiffWaveIMax(string inFileName, string outFileName, int nBLSamples)
 {
   vector<double> wfDiff;
-	double IMax;
+	double IMax, diffMin;
 	// ROOT stuff
   TFile *rootFile = new TFile(inFileName.c_str(), "READ");
 	TTree *eventTree = (TTree*)rootFile->Get("COINCEvents");
@@ -47,6 +47,8 @@ void CalcDiffWaveIMax(string inFileName, string outFileName, int nBLSamples)
 	tAnalysis->Branch(bName.c_str(), &wfDiff);
 	bName = "IMax";
 	tAnalysis->Branch(bName.c_str(), &IMax);	
+	bName = "diffMin";
+	tAnalysis->Branch(bName.c_str(), &diffMin);	
  	cout << "ROOT file loaded, tree created." << endl;
 	
 	// Loop over all the events
@@ -58,8 +60,9 @@ void CalcDiffWaveIMax(string inFileName, string outFileName, int nBLSamples)
 		// Do analysis
 		wfDiff = PACSSAnalysis::DifferentiateWaveform(event->GetWFRaw(), nBLSamples);
 		IMax = PACSSAnalysis::CalcIMax(wfDiff);
+		diffMin = PACSSAnalysis::CalcDiffMin(wfDiff);
 
-    if(i % 1000 == 0)
+    if(i % 10000 == 0)
       cout << "Calculating diffwave and imax for event " << i << "." << endl;
 		tAnalysis->Fill();
   }

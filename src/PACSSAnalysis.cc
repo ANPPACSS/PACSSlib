@@ -335,3 +335,14 @@ double PACSSAnalysis::CalcIMax(vector<double> aCurrentWave)
 	}
 	return IMax;
 }
+
+double PACSSAnalysis::CalcDiffMin(vector<double> aCurrentWave)
+{
+	double diffMin = 1.0e10;
+	for(size_t i=0;i < aCurrentWave.size();i++)
+	{
+		if(aCurrentWave[i] < diffMin)
+			diffMin = aCurrentWave[i];
+	}
+	return diffMin;
+}

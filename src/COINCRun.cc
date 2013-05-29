@@ -24,9 +24,7 @@ COINCRun::COINCRun(string newFileName): PACSSRun(newFileName)
 	aName.erase(aName.size()-5, 5); // erase the last 5 characters (.root)
 	aName += "_98pos.root";
 	posFile = new TFile(aName.c_str(), "READ");
-	if(!posFile)
-		cout << aName << " was not found. Not loaded." << endl;
-	else
+	if(posFile)
 	{
 		posTree = (TTree*)posFile->Get("Analysis");
 		rootFile->cd();
@@ -37,9 +35,7 @@ COINCRun::COINCRun(string newFileName): PACSSRun(newFileName)
 	aName.erase(aName.size()-5, 5); // erase the last 5 characters (.root)
 	aName += "_wfdiffimax.root";
 	wfDiffFile = new TFile(aName.c_str(), "READ");
-	if(!wfDiffFile)
-		cout << aName << " was not found. Not loaded." << endl;
-	else
+	if(wfDiffFile)
 	{
 		wfDiffTree = (TTree*)wfDiffFile->Get("DiffWaveIMax");
 		rootFile->cd();
@@ -50,9 +46,7 @@ COINCRun::COINCRun(string newFileName): PACSSRun(newFileName)
 	aName.erase(aName.size()-5, 5); // erase the last 5 characters (.root)
 	aName += "_reset.root";
 	resetFile = new TFile(aName.c_str(), "READ");
-	if(!resetFile)
-		cout << aName << " was not found. Not loaded." << endl;
-	else
+	if(resetFile)
 	{
 		resetTree = (TTree*)resetFile->Get("ResetFlags");
 		rootFile->cd();
@@ -218,26 +212,41 @@ TH1D* COINCRun::PlotWaveform(int nEvent, int nBL)
 {
 	TCanvas *cWaveforms;
 	TH1D *hRaw;
-	string cName, cDesc, histName;
+	TH1D *hDiff;
+	string cName, cDesc, histName[2];
 	string cutName = "_" + to_string(nEvent) + "_" + to_string(nBL) + "bl";
 	cName = cPrefix + "cWaveform" + cutName;
 	cDesc = "Raw and Diff. Waveforms Event " + to_string(nEvent);
-	histName = hPrefix + "hRawWaveform" + cutName;
+	histName[0] = hPrefix + "hRawWaveform" + cutName;
+	histName[1] = hPrefix + "hDiffWaveform" + cutName;
 	// Get the waveforms here so we know the sizes for the histograms
 	GetEvent(nEvent);
+	vector<double> *wfDiff = new vector<double>();
+	wfDiffTree->SetBranchAddress("wfDiff", &wfDiff);
+	wfDiffTree->GetEntry(nEvent);
 	vector<double> wfRaw = PACSSAnalysis::SubtractBaseline(event->GetWFRaw(), nBL);
 
 	// Check for the TCanvas object existing. Not in gDirectory, because that would make sense
 	if((cWaveforms = GetCanvas(cName.c_str())) == 0)
-		cWaveforms = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 600);
-	if((hRaw = (TH1D*)GetHistogram(histName)) == 0)
-		hRaw = new TH1D(histName.c_str(), "Raw Waveform", wfRaw.size(), 0.0, (double)(wfRaw.size()-1)*(1000/event->GetClockFreq()));
+	{	
+		cWaveforms = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 1080);
+		cWaveforms->Divide(1,2);
+	}
+	if((hRaw = (TH1D*)GetHistogram(histName[0])) == 0)
+	{
+		hRaw = new TH1D(histName[0].c_str(), "Raw Waveform", wfRaw.size(), 0.0, (double)(wfRaw.size()-1)*(1000/event->GetClockFreq()));
+		hDiff = new TH1D(histName[1].c_str(), "Diff Waveform", wfDiff->size(), 0.0, (double)(wfDiff->size()-1)*(1000/event->GetClockFreq()));
+	}
 	// Found - redraw on a new canvas, even if it's already drawn
 	else
 	{
 		cout << "Histogram found in gDirectory. Delete them or change the names to redraw." << endl;
-		hRaw = (TH1D*)GetHistogram(histName);
+		cWaveforms->cd(1);
+		hRaw = (TH1D*)GetHistogram(histName[0]);
 		hRaw->Draw();
+		cWaveforms->cd(2);
+		hDiff = (TH1D*)GetHistogram(histName[1]);
+		hDiff->Draw();
 		return hRaw;
 	}
 
@@ -247,16 +256,28 @@ TH1D* COINCRun::PlotWaveform(int nEvent, int nBL)
 	string sEvent = "(Entry$ == " + to_string(nEvent) + ")";
 	eventTree->Draw(toDraw.c_str(), sEvent, "NBQ");*/
 	for(size_t i=0;i < wfRaw.size();i++)
+	{
 		hRaw->Fill(i*(1000/event->GetClockFreq()), wfRaw.at(i));
+		hDiff->Fill(i*(1000/event->GetClockFreq()), wfDiff->at(i));
+	}
 
 	// Draw it
 	//hRaw = (TH1D*)GetHistogram(histName);
-  hRaw->GetXaxis()->SetTitle("Time (ns)");
+  cWaveforms->cd(1);
+	hRaw->GetXaxis()->SetTitle("Time (ns)");
   hRaw->GetYaxis()->SetTitle("ADC Counts");
   hRaw->SetFillColor(kRed);
 	hRaw->SetFillStyle(0000);
 	hRaw->Draw();
+	cWaveforms->cd(2);
+  hDiff->GetXaxis()->SetTitle("Time (ns)");
+  hDiff->GetYaxis()->SetTitle("ADC Counts");
+  hDiff->SetFillColor(kRed);
+	hDiff->SetFillStyle(0000);
+	hDiff->Draw();
 
+	wfDiffTree->ResetBranchAddress(wfDiffTree->GetBranch("wfDiff"));
+	delete wfDiff;
 	return hRaw;
 }
 
@@ -298,6 +319,8 @@ TH2D* COINCRun::PlotWaveformStack(TCut inCut, int nBL, double yMin, double yMax)
 		vector<double> rawWF = PACSSAnalysis::SubtractBaseline(event->GetWFRaw(), nBL);
 		for(size_t k=0;k < rawWF.size();k++)
 			hWaves->Fill(k*(1000/event->GetClockFreq()), rawWF.at(k));
+		if(i % reportFreq == 0)
+			cout << "Processing event " << i << endl;
 	}
 
 	hWaves->GetXaxis()->SetTitle("Time (ns)");
@@ -310,12 +333,70 @@ TH2D* COINCRun::PlotWaveformStack(TCut inCut, int nBL, double yMin, double yMax)
 	return hWaves;
 }
 
+TH2D* COINCRun::PlotDiffWaveformStack(TCut inCut, double yMin, double yMax)
+{
+	TCanvas *cWaveforms;
+	string cName, cDesc;
+	string cutName = "_" + (string)inCut.GetName();
+	cName = cPrefix + "cDiffWaveformStack" + cutName;
+	cDesc = "Stacked Diff Waveforms";
+	string histName = hPrefix + "hDiffWaveformStack" + "_" + cutName;
+	TH2D *hWaves;
+
+	vector<double> *wfDiff = new vector<double>();
+	wfDiffTree->SetBranchAddress("wfDiff", &wfDiff);
+	wfDiffTree->GetEntry(0);
+	int wfLen = (int)wfDiff->size();
+
+	if((cWaveforms = GetCanvas(cName.c_str())) == 0)
+		cWaveforms = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 600);
+	// Check for one of the histograms existing
+	if((hWaves = (TH2D*)GetHistogram(histName)) == 0)
+		hWaves = new TH2D(histName.c_str(), "Diff Waveforms, Stacked", wfLen, 0, (wfLen-1)*(1000/event->GetClockFreq()), yMax-yMin, yMin, yMax);
+	else
+	{
+		cout << "Histogram found in gDirectory. Delete them or change the names to redraw." << endl;
+		cWaveforms->cd();
+		hWaves->Draw("colz");
+		return hWaves;
+	}
+
+	// Create a new tree with the cut
+	cout << "Copying tree using selection. This may take a moment." << endl;
+	// Make a temp file to hold the new tree, since the current file is read only
+	TFile *fTemp = new TFile("plotwfstack_temp.root", "RECREATE");
+	TTree *tSelection = (TTree*)eventTree->CopyTree(inCut);
+	cout << "Cut tree has " << tSelection->GetEntries() << " events based on your cut." << endl;
+	rootFile->cd();
+
+	for(int i=0;i < tSelection->GetEntries();i++)
+	{
+		tSelection->GetEntry(i);
+		for(size_t k=0;k < wfDiff->size();k++)
+			hWaves->Fill(k*(1000/event->GetClockFreq()), wfDiff->at(k));
+
+		if(i % reportFreq == 0)
+			cout << "Processing event " << i << endl;
+	}
+
+	hWaves->GetXaxis()->SetTitle("Time (ns)");
+	hWaves->GetYaxis()->SetTitle("ADC Counts");
+	hWaves->Draw("colz");
+	// Clean up
+	delete tSelection;
+	fTemp->Close();
+	rootFile->cd();
+	wfDiffTree->ResetBranchAddress(wfDiffTree->GetBranch("wfDiff"));
+	delete wfDiff;
+	return hWaves;
+}
+
 TH1D* COINCRun::PlotAverageWaveform(TCut inCut, int nBL)
 {
 	TCanvas *cAvgWaveform;
 	TH1D *hAvgWave;
 	string cName, cDesc;
-	string cutName = "_" + (string)inCut.GetName();
+	string cutName = "_" + (string)inCut.GetName() + "_" + to_string(nBL);
 	cName = cPrefix + "cAvgWaveform" + cutName;
 	cDesc = "Average Waveform";
 	string histName = hPrefix + "hAvgWaveform" + cutName;
@@ -361,6 +442,64 @@ TH1D* COINCRun::PlotAverageWaveform(TCut inCut, int nBL)
 	fTemp->Close();
 	rootFile->cd();
 
+	return hAvgWave;
+}
+
+TH1D* COINCRun::PlotAverageDiffWaveform(TCut inCut)
+{
+	TCanvas *cAvgWaveform;
+	TH1D *hAvgWave;
+	string cName, cDesc;
+	string cutName = "_" + (string)inCut.GetName();
+	cName = cPrefix + "cAvgDiffWaveform" + cutName;
+	cDesc = "Average Diff Waveform";
+	string histName = hPrefix + "hAvgDiffWaveform" + cutName;
+	vector<double> *wfDiff = new vector<double>();
+	wfDiffTree->SetBranchAddress("wfDiff", &wfDiff);
+	wfDiffTree->GetEntry(0);
+	int wfLen = (int)wfDiff->size();
+
+	if((cAvgWaveform = GetCanvas(cName.c_str())) == 0)
+		cAvgWaveform = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 600);
+	// Check for one of the histograms existing
+	if((hAvgWave = (TH1D*)GetHistogram(histName)) == 0)
+		hAvgWave = new TH1D(histName.c_str(), "Average Diff Waveform",wfLen,0,(wfLen-1)*(1000/event->GetClockFreq()));
+	else
+	{
+		cout << "Histogram found in gDirectory. Delete them or change the names to redraw." << endl;
+		cAvgWaveform->cd();
+		hAvgWave->Draw();
+		return hAvgWave;
+	}
+
+	// Create a new tree with the cut
+	cout << "Copying tree using selection. This may take a moment." << endl;
+	// Make a temp file to hold the new tree, since the current file is read only
+	TFile *fTemp = new TFile("plotavgwf_temp.root", "RECREATE");
+	TTree *tSelection = (TTree*)eventTree->CopyTree(inCut);
+	cout << "Cut tree has " << tSelection->GetEntries() << " events based on your cut." << endl;
+	rootFile->cd();
+
+	for(int i=0;i < tSelection->GetEntries();i++)
+	{
+		tSelection->GetEntry(i);
+		for(size_t k=0;k < wfDiff->size();k++)
+			hAvgWave->Fill(k*(1000/event->GetClockFreq()), wfDiff->at(k));
+		if(i % reportFreq == 0)
+			cout << "Processing event " << i << endl;
+	}
+	hAvgWave->Scale(1.0/(double)tSelection->GetEntries());
+	hAvgWave->GetXaxis()->SetTitle("Time (ns)");
+	hAvgWave->GetYaxis()->SetTitle("ADC Counts");
+	hAvgWave->SetFillColor(kBlue);
+	hAvgWave->SetFillStyle(0000);
+	hAvgWave->Draw();
+	// Clean up
+	delete tSelection;
+	fTemp->Close();
+	rootFile->cd();
+	wfDiffTree->ResetBranchAddress(wfDiffTree->GetBranch("wfDiff"));
+	delete wfDiff;
 	return hAvgWave;
 }
 
