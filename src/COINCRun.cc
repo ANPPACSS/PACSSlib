@@ -1362,20 +1362,8 @@ TH2D* COINCRun::PlotIMaxOverEVsE(TCut inCut, string plotArgs)
 		return hAOverE;
 	}
 
-	// Make a temp tree to hold the selection
-	double IMax;
-	wfDiffTree->SetBranchAddress("IMax", &IMax);
-	cout << "Copying tree using selection. This may take a moment." << endl;
-	TFile *fTemp = new TFile("plotslminchi2_temp.root", "RECREATE");
-	TTree *tSelection = eventTree->CopyTree(inCut);
-	cout << tSelection->GetEntries() << " events selected based on your cut." << endl;
-	rootFile->cd();
-
-	string toDraw = "(IMax/energyGE):energyGE>>"+histName+plotArgs;
-	tSelection->Draw(toDraw.c_str(), inCut, "colz");
-	delete tSelection;
-	fTemp->Close();
-	rootFile->cd();
-	wfDiffTree->ResetBranchAddress(wfDiffTree->GetBranch("IMax"));
+	string toDraw = "(IMax/energyGE):energyGE>>+"+histName+plotArgs;
+	int nPlotted = eventTree->Draw(toDraw.c_str(), inCut, "colz");
+	cout << nPlotted << " events plotted." << endl;
 	return hAOverE;
 }

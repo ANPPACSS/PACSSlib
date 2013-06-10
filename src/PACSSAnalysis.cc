@@ -346,3 +346,18 @@ double PACSSAnalysis::CalcDiffMin(vector<double> aCurrentWave)
 	}
 	return diffMin;
 }
+
+int PACSSAnalysis::CalcT50Offset(vector<double> aWave, int preTrigDelay)
+{
+	TH1D hWF("hWF", "", (int)aWave.size(), 0, (int)aWave.size()-1);
+	// Subtract baseline - use 600 to be safe
+	aWave = SubtractBaseline(aWave, 600);
+
+	int maxBin = hWF.GetMaximumBin();
+	int iBin = maxBin; // Start at the maximum and work backwards
+	double maxVal = hWF.GetBinContent(maxBin);
+	while(hWF.GetBinContent(iBin) > (maxVal*0.5))
+		iBin--;
+
+	return iBin - preTrigDelay;
+}
