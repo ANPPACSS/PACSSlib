@@ -15,6 +15,8 @@ class COINCRun: public PACSSRun
 		TTree *posTree;
 		TFile *wfDiffFile;
 		TTree *wfDiffTree;
+		TFile *t50File;
+		TTree *t50Tree;
 
 	public:
 		COINCRun();
@@ -34,11 +36,12 @@ class COINCRun: public PACSSRun
 		// Plotting functions
 		TObjArray* PlotEnergyHist(TCut inCut="",string plotArgsGE="(65536,0.0,6.0e6)",string plotArgslYSO="(3048,-10.0,2023.0)");
 		TH1D*		   PlotWaveform(int nEvent, int nBL); 
-		TH2D*	 		 PlotWaveformStack(TCut inCut = "", int nBL=600, double yMin=0.0, double yMax=65535.0);
+		TObjArray* PlotWaveformWithT50(int nEvent, int nBL);
+		TH2D*	 		 PlotWaveformStack(TCut inCut = "", int nBL=600, double yMin=0.0, double yMax=65535.0,bool useT50=true);
 		TH2D*	 		 PlotDiffWaveformStack(TCut inCut = "", double yMin=0.0, double yMax=65535.0);
-		TH1D*		   PlotAverageWaveform(TCut inCut="", int nBL=600);
+		TH1D*		   PlotAverageWaveform(TCut inCut="", int nBL=600, bool useT50=true);
 		TH1D*		   PlotAverageDiffWaveform(TCut inCut="");
-		TH1D*			 PlotTimeBetweenCoincEvents(TCut inCut="", string plotArgs="(500, -5000.0, 5000.0)");
+		TH1D*			 PlotTimeBetweenCoincEvents(TCut inCut="", string plotArgs="(500, -5000.0, 5000.0)", bool useTCorr=true);
 		TH2D*			 PlotChargeMap(TCut inCut="", bool gc=true);
 		TObjArray* PlotChargeProj(TCut inCut="", bool gc=true);
 		TH2D*			 PlotSGPosMap(TCut inCut="",string plotArgs="(98,0.0,49.0,98,0.0,49.0)");

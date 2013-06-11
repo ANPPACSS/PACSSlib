@@ -352,6 +352,8 @@ int PACSSAnalysis::CalcT50Offset(vector<double> aWave, int preTrigDelay)
 	TH1D hWF("hWF", "", (int)aWave.size(), 0, (int)aWave.size()-1);
 	// Subtract baseline - use 600 to be safe
 	aWave = SubtractBaseline(aWave, 600);
+	for(size_t i=0;i < aWave.size();i++)
+		hWF.Fill((int)i, aWave.at(i));
 
 	int maxBin = hWF.GetMaximumBin();
 	int iBin = maxBin; // Start at the maximum and work backwards
