@@ -17,6 +17,12 @@ class COINCRun: public PACSSRun
 		TTree *wfDiffTree;
 		TFile *t50File;
 		TTree *t50Tree;
+		TFile *eSimpleFile;
+		TTree *eSimpleTree;
+		TFile *floodFile;
+		TTree *floodTree;
+		TFile *posFCFile;
+		TTree *posFCTree;
 
 	public:
 		COINCRun();
@@ -30,11 +36,13 @@ class COINCRun: public PACSSRun
 		// Traverse ROOT to find stuff
 		TObject		 *GetHistogram(string histName);
 		TCanvas		 *GetCanvas(string canvName);
+		TTree			 *GetEventTree();
 		// Save the histograms to file for loading later
 		void				SaveHistogram(string histName, string hFileName);
 
 		// Plotting functions
 		TObjArray* PlotEnergyHist(TCut inCut="",string plotArgsGE="(65536,0.0,6.0e6)",string plotArgslYSO="(3048,-10.0,2023.0)");
+		TH1D*			 PlotEnergySimple(TCut inCut="", string plotArgs="(65536*2,-65535.0,65536.0)");
 		TH1D*		   PlotWaveform(int nEvent, int nBL); 
 		TObjArray* PlotWaveformWithT50(int nEvent, int nBL);
 		TH2D*	 		 PlotWaveformStack(TCut inCut = "", int nBL=600, double yMin=0.0, double yMax=65535.0,bool useT50=true);
@@ -54,7 +62,8 @@ class COINCRun: public PACSSRun
 		TObjArray* PlotSLChi2(TCut inCut, double xMin=0.0, double xMax=1e5);
 		TObjArray* PlotSLMinChi2(TCut inCut="",double xMin=0.0, double xMax=1e5);
 		TObjArray* PlotSLPosProj(TCut inCut="", string plotArgsX="(98,0.0,49.0)", string plotArgsY="(98,0.0,49.0)");
-		TH2D* 		 PlotIMaxOverEVsE(TCut inCut, string plotArgs="(65536,0.0,6.0e6,1500, -1500.0, 1500.0)");
+		TH2D* 		 PlotIMaxOverEVsE(TCut inCut, string plotArgs="(65536,0.0,6.0e6,5000, 0.0, 10e-3)");
+		TH1D*			 PlotIMaxOverEDist(TCut inCut, string plotArgs="(5000, 0.0, 10e-3)");
 
 		ClassDef(COINCRun, 1);
 };

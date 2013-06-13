@@ -52,6 +52,39 @@ COINCRun::COINCRun(string newFileName): PACSSRun(newFileName)
 		rootFile->cd();
 		eventTree->AddFriend(t50Tree);
 	}
+	// Separately calculated energy values
+	aName = fileName;
+	aName.erase(aName.size()-5, 5); // erase the last 5 characters (.root)
+	aName += "_energysimple.root";
+	eSimpleFile = new TFile(aName.c_str(), "READ");
+	if(eSimpleFile)
+	{
+		eSimpleTree = (TTree*)eSimpleFile->Get("EnergySimple");
+		rootFile->cd();
+		eventTree->AddFriend(eSimpleTree);
+	}
+	// Flood field correction factors
+	aName = fileName;
+	aName.erase(aName.size()-5, 5); // erase the last 5 characters (.root)
+	aName += "_floodcorrect.root";
+	floodFile = new TFile(aName.c_str(), "READ");
+	if(floodFile)
+	{
+		floodTree = (TTree*)floodFile->Get("FloodCorrect");
+		rootFile->cd();
+		eventTree->AddFriend(floodTree);
+	}
+	// Flood field corrected positions
+	aName = fileName;
+	aName.erase(aName.size()-5, 5); // erase the last 5 characters (.root)
+	aName += "_98posfc.root";
+	posFCFile = new TFile(aName.c_str(), "READ");
+	if(posFCFile)
+	{
+		posFCTree = (TTree*)posFCFile->Get("98PosFC");
+		rootFile->cd();
+		eventTree->AddFriend(posFCTree);
+	}
 
   // How many events? iEvent = 0 from PACSSRun initialization
   numEvents = eventTree->GetEntries();
@@ -117,6 +150,12 @@ TCanvas* COINCRun::GetCanvas(string canvName)
 {
 	// return the canvas
 	return (TCanvas*)gROOT->GetListOfCanvases()->FindObject(canvName.c_str());
+}
+
+// Returns the (already friended) event tree for plotting things that don't have a function
+TTree* COINCRun::GetEventTree()
+{
+	return eventTree;
 }
 
 void COINCRun::SaveHistogram(string histName, string hFileName)
@@ -204,6 +243,46 @@ TObjArray* COINCRun::PlotEnergyHist(TCut inCut, string plotArgsGE, string plotAr
 	ret->Add(hGE);
 	ret->Add(hLYSO);
   return ret;
+}
+
+TH1D* COINCRun::PlotEnergySimple(TCut inCut, string plotArgs)
+{
+	TCanvas *cEnergyHist;
+	TH1D *hGE;
+	string cName, cDesc, histName;
+	string cutName = "_" + (string)inCut.GetName();
+	cName = cPrefix + "PlotEnergySimple" + cutName;
+	cDesc = "(Simple) Energy Spectrum";
+	histName = hPrefix + "PlotEnergySimple" + cutName;
+
+	// Check for the TCanvas object existing. Not in gDirectory, because that would make sense
+	if((cEnergyHist = GetCanvas(cName.c_str())) == 0)
+		cEnergyHist = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 600);
+
+	// Make sure we don't have the histograms already available to us. Closing the canvas window
+	// does not delete the histograms, no need to recreate them if they exist
+	// found - will need to process
+	if(!(hGE = (TH1D*)GetHistogram(histName)) == 0)
+	{
+		cout << "Histogram found in gDirectory. Delete them or change the names to redraw." << endl;
+		cEnergyHist->cd();
+		hGE->Draw();
+  	return hGE;
+	}
+
+	// Fill the histograms
+	int nPlotted = 0;
+	// Scale GE energy
+	string toDraw = "EnergySimple >> " + histName + plotArgs;
+	nPlotted = eventTree->Draw(toDraw.c_str(), inCut, "NRQ");
+	hGE = (TH1D*)GetHistogram(histName);
+	hGE->SetTitle("Simple Energy");
+  hGE->GetXaxis()->SetTitle("Energy (arb)");
+  hGE->GetYaxis()->SetTitle("Counts");
+  hGE->SetFillColor(kRed);
+	hGE->Draw();
+	cout << nPlotted << " drawn to GE histogram." << endl;
+  return hGE;
 }
 
 TH1D* COINCRun::PlotWaveform(int nEvent, int nBL)
@@ -620,14 +699,15 @@ TH1D* COINCRun::PlotTimeBetweenCoincEvents(TCut inCut, string plotArgs, bool use
 	char temp[256];
 	string sTemp = histName + plotArgs;
 	if(useTCorr)
-		sprintf(temp, "((timestampLYSONS - %f) - (corrTimestampNS - %f)) >> %s", sLYSO, sGE, sTemp.c_str());
+		sprintf(temp, "((corrTimestampNS - %f) - (timestampLYSONS - %f)) >> %s", sGE, sLYSO, sTemp.c_str());
 	else
-		sprintf(temp, "((timestampLYSONS - %f) - (timestampGENS - %f)) >> %s", sLYSO, sGE, sTemp.c_str());
+		sprintf(temp, "((timestampGENS - %f) - (timestampLYSONS - %f)) >> %s", sGE, sLYSO, sTemp.c_str());
 	int nPlotted = eventTree->Draw(temp, inCut, "NBQ");
 	hCoincDT = (TH1D*)GetHistogram(histName.c_str());
 	hCoincDT->SetTitle("Time Between Coincident Events");
-	hCoincDT->GetXaxis()->SetTitle("tLYSO - tGE (ns)");
+	hCoincDT->GetXaxis()->SetTitle("tGE - tLYSO (ns)");
 	hCoincDT->GetYaxis()->SetTitle("Counts");
+	hCoincDT->SetLineColor(kBlack);
 	hCoincDT->Draw();
 	cout << nPlotted << " events plotted." << endl;
 
@@ -1468,5 +1548,41 @@ TH2D* COINCRun::PlotIMaxOverEVsE(TCut inCut, string plotArgs)
 	string toDraw = "(IMax/energyGE):energyGE>>+"+histName+plotArgs;
 	int nPlotted = eventTree->Draw(toDraw.c_str(), inCut, "colz");
 	cout << nPlotted << " events plotted." << endl;
+	return hAOverE;
+}
+
+TH1D* COINCRun::PlotIMaxOverEDist(TCut inCut, string plotArgs)
+{
+	TCanvas *cAOverE;
+	TH1D *hAOverE;
+	string cName, cDesc, histName;
+	string cutName = "_" + (string)inCut.GetName();
+	cName = cPrefix + "cAOverEDist" + cutName;
+	cDesc = "IMax/E vs E";
+	histName = hPrefix + "hAOverEDist" + cutName;
+	
+	if((cAOverE = GetCanvas(cName.c_str())) == 0)
+		cAOverE = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 600);
+	if((hAOverE = (TH1D*)GetHistogram(histName)) == 0)
+	{
+		hAOverE = new TH1D();
+		hAOverE->SetName(histName.c_str());
+		hAOverE->SetTitle("IMax/Energy Distribution");
+		hAOverE->GetXaxis()->SetTitle("IMax/Energy (arb)");
+		hAOverE->GetYaxis()->SetTitle("Counts");
+		hAOverE->SetLineColor(kBlack);
+	}
+	else
+	{
+		cout << "Histograms found in gDirectory." << endl;
+		cAOverE->cd();
+		hAOverE->Draw();
+		return hAOverE;
+	}
+
+	string toDraw = "(IMax/energyGE)>>+"+histName+plotArgs;
+	int nPlotted = eventTree->Draw(toDraw.c_str(), inCut, "NBQ");
+	cout << nPlotted << " events plotted." << endl;
+	hAOverE->Draw();
 	return hAOverE;
 }

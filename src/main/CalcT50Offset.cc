@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
 void CalcT50Offset(string inFileName, string outFileName, int preTrigDelay)
 {
 	int T50Offset;
-	double corrTimestamp, corrTimestampNS;
+	double corrTimestamp, corrTimestampNS, deltaT;
 	// ROOT stuff
   TFile *rootFile = new TFile(inFileName.c_str(), "READ");
 	TTree *eventTree = (TTree*)rootFile->Get("COINCEvents");
@@ -51,7 +51,16 @@ void CalcT50Offset(string inFileName, string outFileName, int preTrigDelay)
 	tAnalysis->Branch(bName.c_str(), &corrTimestamp);
 	bName = "corrTimestampNS";
 	tAnalysis->Branch(bName.c_str(), &corrTimestampNS);
+	bName = "deltaT";
+	tAnalysis->Branch(bName.c_str(), &deltaT);
  	cout << "ROOT file loaded, tree created." << endl;
+	
+	// Get the timestamp offset
+	eventTree->GetEntry(0);
+	double sLYSO = event->GetTimestampLYSO(true);
+	T50Offset = PACSSAnalysis::CalcT50Offset(event->GetWFRaw(), preTrigDelay);
+	corrTimestampNS = event->GetTimestampGE(true) + T50Offset*(1000.0/event->GetClockFreq());
+	double sGE = corrTimestampNS;
 	
 	// Loop over all the events
   for(int i=0;i < eventTree->GetEntries();i++)
@@ -64,11 +73,12 @@ void CalcT50Offset(string inFileName, string outFileName, int preTrigDelay)
 		// Create a new, corrected timestamp
 		corrTimestamp = event->GetTimestampGE(false) + T50Offset;
 		corrTimestampNS = corrTimestamp*(1000.0/event->GetClockFreq());
+		deltaT = (corrTimestampNS - sGE) - (event->GetTimestampLYSO(true) - sLYSO);
 
     if(i % 10000 == 0)
 		{
       cout << "Calculating T50 offset for event " << i << "(= " << T50Offset << ", ";
-			cout << corrTimestamp << ")." << endl;
+			cout << corrTimestamp << "), deltaT = " << deltaT << "." << endl;
 		}
 		tAnalysis->Fill();
   }
