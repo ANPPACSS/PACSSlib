@@ -30,6 +30,28 @@ LYSORun::LYSORun(string newFileName): PACSSRun(newFileName)
 		rootFile->cd();
 		eventTree->AddFriend(posTree);
 	}
+	// Flood-corrected charge vectors
+	aName = fileName;
+	aName.erase(aName.size()-5, 5); // erase the last 5 characters (.root)
+	aName += "_floodcorrect.root";
+	floodFile = new TFile(aName.c_str(), "READ");
+	if(floodFile)
+	{
+		floodTree = (TTree*)floodFile->Get("FloodCorrect");
+		rootFile->cd();
+		eventTree->AddFriend(floodTree);
+	}
+	// Flood-corrected positions
+	aName = fileName;
+	aName.erase(aName.size()-5, 5); // erase the last 5 characters (.root)
+	aName += "_98posfc.root";
+	posFCFile = new TFile(aName.c_str(), "READ");
+	if(posFCFile)
+	{
+		posFCTree = (TTree*)posFCFile->Get("98PosFC");
+		rootFile->cd();
+		eventTree->AddFriend(posFCTree);
+	}
 
   // How many events? iEvent = 0 from PACSSRun initialization
   numEvents = eventTree->GetEntries();
@@ -114,6 +136,12 @@ void LYSORun::SaveHistogram(string histName, string hFileName)
 	f->Close();
 	rootFile->cd();
 	return;
+}
+
+// Return the friended event tree
+TTree* LYSORun::GetEventTree()
+{
+	return eventTree;
 }
 
 TH2D* LYSORun::PlotChargeMap(TCut inCut, bool gc)
