@@ -138,12 +138,6 @@ void LYSORun::SaveHistogram(string histName, string hFileName)
 	return;
 }
 
-// Return the friended event tree
-TTree* LYSORun::GetEventTree()
-{
-	return eventTree;
-}
-
 TH2D* LYSORun::PlotChargeMap(TCut inCut, bool gc)
 {
 	TCanvas *cChargeMap;

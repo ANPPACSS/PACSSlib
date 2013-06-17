@@ -22,6 +22,7 @@ class PACSSRun: public TObject
 
 		int 	 GetReportFreq();
 		int 	 GetNumEvents();
+		TTree *GetEventTree();
 
 		void 	 SetReportFreq(int newReportFreq);
 

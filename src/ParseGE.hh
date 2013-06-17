@@ -48,6 +48,7 @@ class ParseGE
     uint32_t eventLength;
     bool     doneReading;
 		uint32_t clockFreq;
+		int			 channel;
 
     void     OpenGEFile();
     void     OpenROOTFile();
@@ -62,7 +63,7 @@ class ParseGE
 
 		ParseGE();
 		// Default clock is 100 MHz, so multiply by 10. 20 for 50 MHz
-    ParseGE(string newInFileName, string newOutFileName, int clockFreq=100);
+    ParseGE(string newInFileName, string newOutFileName, int clockFreq=100, int channel=1);
     virtual ~ParseGE();
 
     bool ReadAllEvents();

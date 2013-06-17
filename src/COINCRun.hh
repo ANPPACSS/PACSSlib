@@ -36,7 +36,6 @@ class COINCRun: public PACSSRun
 		// Traverse ROOT to find stuff
 		TObject		 *GetHistogram(string histName);
 		TCanvas		 *GetCanvas(string canvName);
-		TTree			 *GetEventTree();
 		// Save the histograms to file for loading later
 		void				SaveHistogram(string histName, string hFileName);
 

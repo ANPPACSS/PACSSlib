@@ -44,9 +44,12 @@ void CalcSlidePosFC(string inFileName, string outFileName, int nSlidePos)
 	TTree *tAnalysis = new TTree("98PosFC", "98PosFC");
 
 	// Get the flood correction tree
-	TFile *fFC = new TFile("scan_coinc_floodcorr.root", "READ");
+	string aName = inFileName;
+  aName.erase(aName.size()-5, 5);
+  aName += "_floodcorrect.root";
+	TFile *fFC = new TFile(aName.c_str(), "READ");
 	TTree *tFC = (TTree*)fFC->Get("FloodCorrect");
-	vector<double> chargeFC(NUM_LYSO_PIXELS);
+	vector<double> *chargeFC = new vector<double>();
 	tFC->SetBranchAddress("chargeFC", &chargeFC);
 
 	// Set the branch name depending on the number of sliding positions for clarity
@@ -78,7 +81,7 @@ void CalcSlidePosFC(string inFileName, string outFileName, int nSlidePos)
 		eventTree->GetEntry(i);
 		tFC->GetEntry(i);
 
-		event->SetChargeGC(chargeFC);
+		event->SetChargeGC(*chargeFC);
 
 		// Do analysis
 		PACSSAnalysis::CalcSlidingGaussXYPosition(event, gaussXPos, chi2GX, gaussYPos, chi2GY, nSlidePos);

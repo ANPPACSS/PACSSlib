@@ -61,7 +61,7 @@ void DoFloodCorrection(string inFileName, string outFileName, string corrFileNam
 	for(int i=0;i < NUM_LYSO_PIXELS;i++)
 	{
 		getline(corrFile, buf);
-		double gc = (double)atoi(buf.c_str());
+		double gc = (double)atof(buf.c_str());
 		floodCorrect.push_back(gc);
 		cout << floodCorrect[i] << " ";
 	}

@@ -53,6 +53,11 @@ const vector<double> BaseGEEvent::GetWFDiff() const
 	return wfDiff;
 }
 
+const vector<double> BaseGEEvent::GetWFLYSO() const
+{
+	return wfLYSO;
+}
+
 const int BaseGEEvent::GetChannel() const
 {
 	return channel;
@@ -105,6 +110,12 @@ void BaseGEEvent::SetWFEnergy(vector<double> newWFEnergy)
 void BaseGEEvent::SetWFDiff(vector<double> newWFDiff)
 {
 	wfDiff = newWFDiff;
+	return;
+}
+
+void BaseGEEvent::SetWFLYSO(vector<double> newWFLYSO)
+{
+	wfLYSO = newWFLYSO;
 	return;
 }
 
@@ -172,6 +183,7 @@ void BaseGEEvent::ClearEvent()
 	wfRaw.clear();
 	wfEnergy.clear();
 	wfDiff.clear();
+	wfLYSO.clear();
 	channel = 0;
 	clockFreq = 0;
 }

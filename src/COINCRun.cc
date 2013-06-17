@@ -152,12 +152,6 @@ TCanvas* COINCRun::GetCanvas(string canvName)
 	return (TCanvas*)gROOT->GetListOfCanvases()->FindObject(canvName.c_str());
 }
 
-// Returns the (already friended) event tree for plotting things that don't have a function
-TTree* COINCRun::GetEventTree()
-{
-	return eventTree;
-}
-
 void COINCRun::SaveHistogram(string histName, string hFileName)
 {
 	if(hFileName == fileName)
