@@ -53,31 +53,23 @@ void PairGEEvents(string fileNameGE1, string fileNameGE2, string fileNameOut)
 		return;
 	}
 
-  int iGE2 = 0;
-  int iGE1 = 0;
   int nFilled = 0;
   for(int i=0;i < numEvents;i++)
   {
 		event->ClearEvent();
 		// Grab this event
-		runGE1->GetEvent(iGE1);
-		runGE2->GetEvent(iGE2);
+		runGE1->GetEvent(i);
+		runGE2->GetEvent(i);
 
-		if(eventGE1->GetTimestampGE(false) == eventGE2->GetTimestampGE(false))
-		{
-			// Copy the CH1 stuff - primary event information
-			*event = *eventGE1;
-			// Copy the LYSO waveform only from the second channel
-			event->SetWFLYSO(eventGE2->GetWFRaw());
-			iGE1++;
-			iGE2++;
-			nFilled++;
-			eventTree->Fill();
-		}
+		*event = *eventGE1;
+		// Copy the LYSO waveform only from the second channel
+		event->SetWFLYSO(eventGE2->GetWFRaw());
+		nFilled++;
+		eventTree->Fill();
 
-    if(iGE1 % 10000 == 0)
+    if(i % 10000 == 0)
     {
-      cout << "Attempting to pair GE1 event " << iGE1 << "." << endl;
+      cout << "Attempting to pair GE1 event " << i << "." << endl;
     }
   }
   
