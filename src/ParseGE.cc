@@ -316,9 +316,9 @@ void ParseGE::ReadEventBuffer()
     	numTotalEvents++;
 		}
 
-    if(i % 10000 == 0)
+    if(numTotalEvents % 10000 == 0)
     {
-      cout << "Processing event " << numCurrEvent << "." << endl;
+      cout << "Processing event " << numTotalEvents << "." << endl;
     }
 
   }

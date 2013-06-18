@@ -68,7 +68,7 @@ void PairGEEvents(string fileNameGE1, string fileNameGE2, string fileNameOut)
 			// Copy the CH1 stuff - primary event information
 			*event = *eventGE1;
 			// Copy the LYSO waveform only from the second channel
-			event->SetWFLYSO(eventGE2->GetWFLYSO());
+			event->SetWFLYSO(eventGE2->GetWFRaw());
 			iGE1++;
 			iGE2++;
 			nFilled++;
