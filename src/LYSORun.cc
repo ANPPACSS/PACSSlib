@@ -22,7 +22,7 @@ LYSORun::LYSORun(string newFileName): PACSSRun(newFileName)
 	// Position analysis
 	string aName = fileName;
 	aName.erase(aName.size()-5, 5); // erase the last 5 characters (.root)
-	aName += "_98pos.root";
+	aName += "_980pos.root";
 	posFile = new TFile(aName.c_str(), "READ");
 	if(posFile)
 	{
@@ -44,11 +44,11 @@ LYSORun::LYSORun(string newFileName): PACSSRun(newFileName)
 	// Flood-corrected positions
 	aName = fileName;
 	aName.erase(aName.size()-5, 5); // erase the last 5 characters (.root)
-	aName += "_98posfc.root";
+	aName += "_980posfc.root";
 	posFCFile = new TFile(aName.c_str(), "READ");
 	if(posFCFile)
 	{
-		posFCTree = (TTree*)posFCFile->Get("98PosFC");
+		posFCTree = (TTree*)posFCFile->Get("980PosFC");
 		rootFile->cd();
 		eventTree->AddFriend(posFCTree);
 	}
