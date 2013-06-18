@@ -29,6 +29,9 @@ class PACSSAnalysis
 		static double CalcFWHM(TH1D *hProjection);
 		static vector<double> DifferentiateWaveform(vector<double> aWave, int nBLSamples);
 		static double CalcIMax(vector<double> aCurrentWave);
+		static double CalcDiffMin(vector<double> aCurrentWave);
+		static int CalcT50Offset(vector<double> aWave, int preTrigDelay);
+		static double CalcEnergySimple(vector<double> aWave, int nBL, int nAvg);
 
 		// Useful other functions
 

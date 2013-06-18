@@ -335,3 +335,47 @@ double PACSSAnalysis::CalcIMax(vector<double> aCurrentWave)
 	}
 	return IMax;
 }
+
+double PACSSAnalysis::CalcDiffMin(vector<double> aCurrentWave)
+{
+	double diffMin = 1.0e10;
+	for(size_t i=0;i < aCurrentWave.size();i++)
+	{
+		if(aCurrentWave[i] < diffMin)
+			diffMin = aCurrentWave[i];
+	}
+	return diffMin;
+}
+
+int PACSSAnalysis::CalcT50Offset(vector<double> aWave, int preTrigDelay)
+{
+	TH1D hWF("hWF", "", (int)aWave.size(), 0, (int)aWave.size()-1);
+	// Subtract baseline
+	aWave = SubtractBaseline(aWave, 300);
+	for(size_t i=0;i < aWave.size();i++)
+		hWF.Fill((int)i, aWave.at(i));
+
+	int maxBin = hWF.GetMaximumBin();
+	int iBin = maxBin; // Start at the maximum and work backwards
+	double maxVal = hWF.GetBinContent(maxBin);
+	while(hWF.GetBinContent(iBin) > (maxVal*0.5))
+		iBin--;
+
+	return iBin - preTrigDelay;
+}
+
+double PACSSAnalysis::CalcEnergySimple(vector<double> aWave, int nBL, int nAvg)
+{
+	// Subtract the baseline
+	vector<double> wf = SubtractBaseline(aWave, nBL);
+
+	// Average the last nAvg samples
+	int wfLen = (int)wf.size();
+	double highAvg = 0.0;
+	for(int i=0;i < nAvg;i++)
+		highAvg += wf.at(wfLen-nAvg+i);
+	highAvg /= nAvg;
+
+	// Assume baseline is 0
+	return highAvg;
+}

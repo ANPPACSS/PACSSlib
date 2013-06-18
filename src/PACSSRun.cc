@@ -48,6 +48,11 @@ int PACSSRun::GetNumEvents()
 	return numEvents;
 }
 
+TTree* PACSSRun::GetEventTree()
+{
+	return eventTree;
+}
+
 void PACSSRun::SetReportFreq(int newReportFreq)
 {
 	reportFreq = newReportFreq;

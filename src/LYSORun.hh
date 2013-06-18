@@ -12,7 +12,11 @@ class LYSORun: public PACSSRun
 		LYSOEvent *event;
 		TFile *posFile;
 		TTree *posTree;
-
+		TFile *floodFile;
+		TTree *floodTree;
+		TFile *posFCFile;
+		TTree *posFCTree;
+	
 	public:
 		LYSORun();
 		LYSORun(string newFileName);

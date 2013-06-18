@@ -25,6 +25,7 @@ class BaseGEEvent
 		vector<double> wfRaw;
 		vector<double> wfEnergy;
 		vector<double> wfDiff;
+		vector<double> wfLYSO;
 		int						 channel; // "ADCID"
 		int						 clockFreq; // We changed clock frequencies so making it an attribute is easiest
 
@@ -40,6 +41,7 @@ class BaseGEEvent
 		const vector<double> GetWFRaw() const;
 		const vector<double> GetWFEnergy() const;
 		const vector<double> GetWFDiff() const;
+		const vector<double> GetWFLYSO() const;
 		const int						 GetChannel() const;
 		const int						 GetClockFreq() const; // in MHz
 
@@ -51,6 +53,7 @@ class BaseGEEvent
 		void 					 SetWFRaw(vector<double> newWFRaw);
 		void 					 SetWFEnergy(vector<double> newWFEnergy);
 		void					 SetWFDiff(vector<double> newWFDiff);
+		void					 SetWFLYSO(vector<double> newWFLYSO);
 		void					 SetChannel(int newChannel);
 		void					 SetClockFreq(int newClockFreq); // in MHz
 

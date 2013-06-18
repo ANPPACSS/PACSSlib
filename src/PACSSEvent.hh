@@ -15,6 +15,7 @@
 #include <TBranch.h>
 #include <TObject.h>
 #include <TCanvas.h>
+#include <TLegend.h>
 #include <TH1.h>
 #include <TH2.h>
 #include <TF1.h>

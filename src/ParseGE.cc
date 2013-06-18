@@ -8,7 +8,7 @@ ParseGE::ParseGE()
 	// Parameterless constructor, for ROOT. Not used.
 }
 
-ParseGE::ParseGE(string newInFileName, string newOutFileName, int clockFreq)
+ParseGE::ParseGE(string newInFileName, string newOutFileName, int clockFreq, int channel)
 {
   inFileName = newInFileName;
   outFileName = newOutFileName;
@@ -28,6 +28,7 @@ ParseGE::ParseGE(string newInFileName, string newOutFileName, int clockFreq)
 	rawWrap = false;
 	rawStartIndex = 0;
 	this->clockFreq = clockFreq;
+	this->channel = channel;
 
   OpenGEFile();
   OpenROOTFile();
@@ -308,16 +309,18 @@ void ParseGE::ReadEventBuffer()
   {
     // Read one event and add it to the ROOT tree
     ReadSingleEvent();
-    eventTree->Fill();
+		if(event->GetChannel() == channel)
+		{
+    	eventTree->Fill();
+    	numCurrEvent++;
+    	numTotalEvents++;
+		}
 
-    if(numTotalEvents % 10000 == 0)
+    if(i % 10000 == 0)
     {
-      cout << "Processing event " << numTotalEvents << "." << endl;
-			cout << "Channel: " << event->GetChannel() << endl;
+      cout << "Processing event " << numCurrEvent << "." << endl;
     }
 
-    numCurrEvent++;
-    numTotalEvents++;
   }
 
   return;
