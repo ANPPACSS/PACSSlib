@@ -45,7 +45,7 @@ void CalcEnergySimple(string inFileName, string outFileName, int nBL, int nAvg)
 	// Create the TTree for Analysis only if there isn't one already
 	TTree *tAnalysis = new TTree("EnergySimple", "EnergySimple");
 
-	string bName = "EnergySimple";
+	string bName = "energyGES";
 	tAnalysis->Branch(bName.c_str(), &EnergySimple);
  	cout << "ROOT file loaded, tree created." << endl;
 	

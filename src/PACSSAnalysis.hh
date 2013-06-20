@@ -30,7 +30,7 @@ class PACSSAnalysis
 		static vector<double> DifferentiateWaveform(vector<double> aWave, int nBLSamples);
 		static double CalcIMax(vector<double> aCurrentWave);
 		static double CalcDiffMin(vector<double> aCurrentWave);
-		static int CalcT50Offset(vector<double> aWave, int preTrigDelay);
+		static int CalcT50Offset(vector<double> aWave);
 		static double CalcEnergySimple(vector<double> aWave, int nBL, int nAvg);
 
 		// Useful other functions

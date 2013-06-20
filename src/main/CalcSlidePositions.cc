@@ -41,10 +41,10 @@ void CalcSlidePos(string inFileName, string outFileName, int nSlidePos)
 	// Handle the output
 	TFile *fOut = new TFile(outFileName.c_str(), "RECREATE");
 	// Create the TTree for Analysis only if there isn't one already
-	TTree *tAnalysis = new TTree("Analysis", "Analysis");
+	string NPos = to_string(nSlidePos) + "Pos";
+	TTree *tAnalysis = new TTree(NPos.c_str(), NPos.c_str());
 
 	// Set the branch name depending on the number of sliding positions for clarity
-	string NPos = to_string(nSlidePos) + "Pos";
 	// Check if the branch for this analysis exists. If so, overwrite it, if not, make it
 	// Not found
 	string bName = "gaussX" + NPos;
@@ -83,7 +83,7 @@ void CalcSlidePos(string inFileName, string outFileName, int nSlidePos)
 	tAnalysis->Write();
 	fOut->Close();
   rootFile->Close();
-  cout << "Calculated positions written to Analysis tree  in " << inFileName << endl;
+  cout << "Calculated positions written to " << NPos << " tree in " << outFileName << endl;
   delete event;
 	return;
 }

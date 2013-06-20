@@ -347,11 +347,11 @@ double PACSSAnalysis::CalcDiffMin(vector<double> aCurrentWave)
 	return diffMin;
 }
 
-int PACSSAnalysis::CalcT50Offset(vector<double> aWave, int preTrigDelay)
+int PACSSAnalysis::CalcT50Offset(vector<double> aWave)
 {
 	TH1D hWF("hWF", "", (int)aWave.size(), 0, (int)aWave.size()-1);
 	// Subtract baseline
-	aWave = SubtractBaseline(aWave, 300);
+	aWave = SubtractBaseline(aWave, 600);
 	for(size_t i=0;i < aWave.size();i++)
 		hWF.Fill((int)i, aWave.at(i));
 
@@ -361,7 +361,7 @@ int PACSSAnalysis::CalcT50Offset(vector<double> aWave, int preTrigDelay)
 	while(hWF.GetBinContent(iBin) > (maxVal*0.5))
 		iBin--;
 
-	return iBin - preTrigDelay;
+	return iBin;
 }
 
 double PACSSAnalysis::CalcEnergySimple(vector<double> aWave, int nBL, int nAvg)

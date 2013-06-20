@@ -54,33 +54,61 @@ void PairGEEvents(string fileNameGE1, string fileNameGE2, string fileNameOut)
 	}
 
   int nFilled = 0;
+	int nSkipped = 0;
+	int iGE1 = 0;
+	int iGE2 = 0;
   for(int i=0;i < numEvents;i++)
   {
 		event->ClearEvent();
 		// Grab this event
-		runGE1->GetEvent(i);
-		runGE2->GetEvent(i);
+		runGE1->GetEvent(iGE1);
+		runGE2->GetEvent(iGE2);
 
-		*event = *eventGE1;
-		// Copy the LYSO waveform only from the second channel
-		event->SetWFLYSO(eventGE2->GetWFRaw());
-		nFilled++;
-		eventTree->Fill();
+		// Equal timestamps? -> copy!
+		if(eventGE1->GetTimestampGE(false) == eventGE2->GetTimestampGE(false))
+		{
+			*event = *eventGE1;
+			// Copy the LYSO waveform only from the second channel
+			vector<double> wf = eventGE2->GetWFRaw();
+			event->SetWFLYSO(wf);
+			nFilled++;
+			iGE1++;
+			iGE2++;
+			eventTree->Fill();
+		}
+		// Check next two events
+		else if(runGE1->GetEvent(iGE1+1)->GetTimestampGE(false) == runGE2->GetEvent(iGE2)->GetTimestampGE(false))
+			iGE1++;
+		else if(runGE1->GetEvent(iGE1+2)->GetTimestampGE(false) == runGE2->GetEvent(iGE2)->GetTimestampGE(false))
+			iGE1 += 2;
+		else if(runGE2->GetEvent(iGE2+1)->GetTimestampGE(false) == runGE1->GetEvent(iGE1)->GetTimestampGE(false))
+			iGE2++;
+		else if(runGE2->GetEvent(iGE2+2)->GetTimestampGE(false) == runGE1->GetEvent(iGE1)->GetTimestampGE(false))
+			iGE2 += 2;
+		else
+		{
+			cout << "Pair not found. Skipping " << iGE1 << ", " << iGE2 << endl;
+			nSkipped++;
+			cout << eventGE1->GetTimestampGE(false) << ", " << eventGE2->GetTimestampGE(false) << endl;
+			iGE1++;
+			iGE2++;
+		}
 
     if(i % 10000 == 0)
     {
-      cout << "Attempting to pair GE1 event " << i << "." << endl;
+      cout << "Attempting to pair GE event " << i << "." << endl;
     }
   }
   
   cout << nFilled << " events successfully paired." << endl;
 
   rootFile->cd();
-  rootFile->Write();
+  eventTree->Write();
   rootFile->Close();
 	delete event;
 	delete runGE1;
 	delete runGE2;
   cout << "Paired events written to " << fileNameOut << endl;
+	cout << nSkipped << " events skipped." << endl;
   return;
 }
