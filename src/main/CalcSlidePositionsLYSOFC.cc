@@ -96,7 +96,7 @@ void CalcSlidePosFC(string inFileName, string outFileName, int nSlidePos)
 		nFilled++;
   }
 
-	fFC->cd();
+	fOut->cd();
 	tAnalysis->Write();
 	fOut->Close();
 	fFC->Close();
