@@ -45,15 +45,12 @@ void PairGEEvents(string fileNameGE1, string fileNameGE2, string fileNameOut)
 	GEEvent *eventGE2 = runGE2->GetEvent(0);
 	cout << "GE2: " << runGE2->GetNumEvents() << " entries." << endl;
 
-	// Both channels should have the same number of events
+	// Take the channel with less events
   int numEvents = runGE1->GetNumEvents();
-	if(runGE2->GetNumEvents() != runGE1->GetNumEvents())
-	{
-		cout << "Unequal number of events - exiting." << endl;
-		return;
-	}
-
-  int nFilled = 0;
+	if(runGE2->GetNumEvents() < runGE1->GetNumEvents())
+  	numEvents = runGE2->GetNumEvents();
+	
+	int nFilled = 0;
 	int nSkipped = 0;
 	int iGE1 = 0;
 	int iGE2 = 0;

@@ -379,3 +379,27 @@ double PACSSAnalysis::CalcEnergySimple(vector<double> aWave, int nBL, int nAvg)
 	// Assume baseline is 0
 	return highAvg;
 }
+
+vector<double> PACSSAnalysis::TrapezoidalFilter(vector<double> aWave, int nPeak, int nGap, double PZCorr)
+{
+	if(aWave.size() <= 1)
+	{
+		cout << "Waveform is 1 sample or less! Returning original waveform..." << endl;
+		return aWave;
+	}
+
+	vector<double> temp(aWave.size());
+	vector<double> trapWave(aWave);
+	temp.at(0) = aWave.at(0);
+	trapWave.at(0) = (PZCorr+1)*aWave.at(0);
+	double scratch = 0.0;
+	for(size_t i=1;i < aWave.size();i++)
+	{
+		scratch = aWave.at(i) - ((i >= nPeak) ? aWave.at(i-nPeak) : 0.0)
+		 - ((i >= nGap + nPeak) ? aWave.at(i - nGap - nPeak) : 0.0)
+		 + ((i >= nGap + 2*nPeak) ? aWave.at(i - nGap - 2*nPeak) : 0.0);
+		temp.at(i) = temp.at(i-1) + scratch;
+		trapWave.at(i) = trapWave.at(i-1) + temp.at(i) + PZCorr*scratch;
+	}
+	return trapWave;
+}
