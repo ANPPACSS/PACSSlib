@@ -1584,3 +1584,38 @@ TH1D* COINCRun::PlotIMaxOverEDist(TCut inCut, string plotArgs)
 	hAOverE->Draw();
 	return hAOverE;
 }
+
+/*TH2D* COINCRun::PlotDriftTimeMap(TCut inCut, string plotArgs)
+{
+	TCanvas *cDTMap;
+	TH2D *hDTMap;
+	string cName, cDesc, histName;
+	string cutName = "_" + (string)inCut.GetName();
+	cName = cPrefix + "cPlotDTMap" + cutName;
+	cDesc = "Drift Time Map";
+	histName = hPrefix + "hDTMap" + cutName;
+
+	// Check for the TCanvas object existing. Not in gDirectory, because that would make sense
+	if((cDTMap = GetCanvas(cName.c_str())) == 0)
+		cDTMap = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 1080);
+
+	// Make sure we don't have the histograms already available to us. Closing the canvas window
+	// does not delete the histograms, no need to recreate them if they exist
+	// found - will need to process
+	if(!(hDTMap = (TH2D*)GetHistogram(histName)) == 0)
+	{
+		cout << "Histogram found in gDirectory. Delete them or change the names to redraw." << endl;
+		cDTMap->cd();
+		hDTMap->Draw();
+  	return hDTMap;
+	}
+	else
+		hDTMap = new TH2D(histName.c_str(), "Drift Time Map", 49, 0.0, 49.0, 49, 0.0, 49.0);
+
+	cout << nBins << " bins used for map." << endl;
+	for(int i=0;i < nBins;i++)
+	{
+		
+	}
+	return hDTMap;
+}*/

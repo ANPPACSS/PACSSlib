@@ -1,33 +1,35 @@
 #include "../COINCEvent.hh"
 #include "../PACSSAnalysis.hh"
 
-void CalcT50Offset(string inFileName, string outFileName);
+void CalcT50Offset(string inFileName, string outFileName, int nBL);
 
 int main(int argc, char *argv[])
 {
 	string inFileName;
 	string outFileName;
+	int nBL;
 
   // Handle the command line arguments
   switch(argc)
   {
-    case 3:
+    case 4:
 			inFileName = (string)argv[1];
 			outFileName = (string)argv[2];
-      cout << "Calculating T50 sample numbers for both waveforms." << endl;
+			nBL = atoi(argv[3]);
+      cout << "Calculating T50 sample numbers for both waveforms with " << nBL << " samples BL subtract." << endl;
       break;
     default:
-      cout << "Usage: " << argv[0] << " [COINC ROOT file] [analysis output ROOT file]";
+      cout << "Usage: " << argv[0] << " [COINC ROOT file] [analysis output ROOT file] [n sample bl subtract]";
 			cout << endl;
       return 1;
   }
 
-  CalcT50Offset(inFileName, outFileName);
+  CalcT50Offset(inFileName, outFileName, nBL);
 
   return 0;
 }
 
-void CalcT50Offset(string inFileName, string outFileName)
+void CalcT50Offset(string inFileName, string outFileName, int nBL)
 {
 	int t50Ge, t50LYSO, deltaT;
 	// ROOT stuff
@@ -56,8 +58,8 @@ void CalcT50Offset(string inFileName, string outFileName)
 		eventTree->GetEntry(i);
 
 		// Do analysis
-		t50Ge = PACSSAnalysis::CalcT50Offset(event->GetWFRaw());
-		t50LYSO = PACSSAnalysis::CalcT50Offset(event->GetWFLYSO());
+		t50Ge = PACSSAnalysis::CalcT50Offset(event->GetWFRaw(), nBL);
+		t50LYSO = PACSSAnalysis::CalcT50Offset(event->GetWFLYSO(), nBL);
 		deltaT = 10.0*(t50Ge - t50LYSO);
 
     if(i % 10000 == 0)

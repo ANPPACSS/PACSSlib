@@ -347,11 +347,11 @@ double PACSSAnalysis::CalcDiffMin(vector<double> aCurrentWave)
 	return diffMin;
 }
 
-int PACSSAnalysis::CalcT50Offset(vector<double> aWave)
+int PACSSAnalysis::CalcT50Offset(vector<double> aWave, int nBL)
 {
 	TH1D hWF("hWF", "", (int)aWave.size(), 0, (int)aWave.size()-1);
 	// Subtract baseline
-	aWave = SubtractBaseline(aWave, 600);
+	aWave = SubtractBaseline(aWave, nBL);
 	for(size_t i=0;i < aWave.size();i++)
 		hWF.Fill((int)i, aWave.at(i));
 
@@ -380,6 +380,23 @@ double PACSSAnalysis::CalcEnergySimple(vector<double> aWave, int nBL, int nAvg)
 	return highAvg;
 }
 
+vector<double> PACSSAnalysis::PoleZeroCorrect(vector<double> aWave, double decayConst)
+{
+	if(aWave.size() <= 1)
+  {
+	  cout << "Waveform is 1 sample or less! Returning original waveform..." << endl;
+		return aWave;
+  }
+
+	double multiplier = exp(-1.0/decayConst);
+	vector<double> ret(aWave.begin(), aWave.end());
+	for(int i=1;i < (int)ret.size();i++)
+	{
+		ret.at(i) = ret.at(i-1) - multiplier*aWave.at(i-1) + aWave.at(i);
+	}
+	return ret;
+}
+
 vector<double> PACSSAnalysis::TrapezoidalFilter(vector<double> aWave, int nPeak, int nGap, double PZCorr)
 {
 	if(aWave.size() <= 1)
@@ -393,7 +410,7 @@ vector<double> PACSSAnalysis::TrapezoidalFilter(vector<double> aWave, int nPeak,
 	temp.at(0) = aWave.at(0);
 	trapWave.at(0) = (PZCorr+1)*aWave.at(0);
 	double scratch = 0.0;
-	for(size_t i=1;i < aWave.size();i++)
+	for(int i=1;i < (int)aWave.size();i++)
 	{
 		scratch = aWave.at(i) - ((i >= nPeak) ? aWave.at(i-nPeak) : 0.0)
 		 - ((i >= nGap + nPeak) ? aWave.at(i - nGap - nPeak) : 0.0)

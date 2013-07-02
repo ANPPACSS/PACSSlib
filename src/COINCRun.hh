@@ -63,6 +63,7 @@ class COINCRun: public PACSSRun
 		TObjArray* PlotSLPosProj(TCut inCut="", string plotArgsX="(98,0.0,49.0)", string plotArgsY="(98,0.0,49.0)");
 		TH2D* 		 PlotIMaxOverEVsE(TCut inCut, string plotArgs="(65536,0.0,6.0e6,5000, 0.0, 10e-3)");
 		TH1D*			 PlotIMaxOverEDist(TCut inCut, string plotArgs="(5000, 0.0, 10e-3)");
+		//TH2D*			 PlotDriftTimeMap(TCut inCut, string plotArgs="(49, 0.0, 49.0, 49, 0.0, 49.0)");
 
 		ClassDef(COINCRun, 1);
 };
