@@ -26,7 +26,7 @@ COINCRun::COINCRun(string newFileName): PACSSRun(newFileName)
 	posFile = new TFile(aName.c_str(), "READ");
 	if(posFile)
 	{
-		posTree = (TTree*)posFile->Get("Analysis");
+		posTree = (TTree*)posFile->Get("98Pos");
 		rootFile->cd();
 		eventTree->AddFriend(posTree);
 	}
@@ -64,7 +64,7 @@ COINCRun::COINCRun(string newFileName): PACSSRun(newFileName)
 		eventTree->AddFriend(eSimpleTree);
 	}
 	// Flood field correction factors
-	aName = fileName;
+	/*aName = fileName;
 	aName.erase(aName.size()-5, 5); // erase the last 5 characters (.root)
 	aName += "_floodcorrect.root";
 	floodFile = new TFile(aName.c_str(), "READ");
@@ -73,9 +73,10 @@ COINCRun::COINCRun(string newFileName): PACSSRun(newFileName)
 		floodTree = (TTree*)floodFile->Get("FloodCorrect");
 		rootFile->cd();
 		eventTree->AddFriend(floodTree);
-	}
-	// Flood field corrected positions
-	aName = fileName;
+	}*/
+
+// Flood field corrected positions
+	/*aName = fileName;
 	aName.erase(aName.size()-5, 5); // erase the last 5 characters (.root)
 	aName += "_98pos.root";
 	posFCFile = new TFile(aName.c_str(), "READ");
@@ -84,7 +85,7 @@ COINCRun::COINCRun(string newFileName): PACSSRun(newFileName)
 		posFCTree = (TTree*)posFCFile->Get("98Pos");
 		rootFile->cd();
 		eventTree->AddFriend(posFCTree);
-	}
+	}*/
 
   // How many events? iEvent = 0 from PACSSRun initialization
   numEvents = eventTree->GetEntries();
@@ -101,6 +102,8 @@ COINCRun::~COINCRun()
 		posFile->Close();
 	if(wfDiffFile)
 		wfDiffFile->Close();
+	if(t50File)
+		t50File->Close();
 	rootFile->cd();
 	rootFile->Close();
 }
@@ -1585,7 +1588,7 @@ TH1D* COINCRun::PlotIMaxOverEDist(TCut inCut, string plotArgs)
 	return hAOverE;
 }
 
-/*TH2D* COINCRun::PlotDriftTimeMap(TCut inCut, string plotArgs)
+TH2D* COINCRun::PlotDriftTimeMap(TCut inCut, string plotArgs)
 {
 	TCanvas *cDTMap;
 	TH2D *hDTMap;
@@ -1597,12 +1600,12 @@ TH1D* COINCRun::PlotIMaxOverEDist(TCut inCut, string plotArgs)
 
 	// Check for the TCanvas object existing. Not in gDirectory, because that would make sense
 	if((cDTMap = GetCanvas(cName.c_str())) == 0)
-		cDTMap = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 1080);
+		cDTMap = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 800);
 
 	// Make sure we don't have the histograms already available to us. Closing the canvas window
 	// does not delete the histograms, no need to recreate them if they exist
 	// found - will need to process
-	if(!(hDTMap = (TH2D*)GetHistogram(histName)) == 0)
+	if(!((hDTMap = (TH2D*)GetHistogram(histName)) == 0))
 	{
 		cout << "Histogram found in gDirectory. Delete them or change the names to redraw." << endl;
 		cDTMap->cd();
@@ -1610,12 +1613,52 @@ TH1D* COINCRun::PlotIMaxOverEDist(TCut inCut, string plotArgs)
   	return hDTMap;
 	}
 	else
-		hDTMap = new TH2D(histName.c_str(), "Drift Time Map", 49, 0.0, 49.0, 49, 0.0, 49.0);
-
-	cout << nBins << " bins used for map." << endl;
-	for(int i=0;i < nBins;i++)
+		hDTMap = new TH2D(histName.c_str(), "Drift Time Map", 98, 0.0, 49.0, 98, 0.0, 49.0);
+	
+	int deltaT;
+  //t50Tree->SetBranchAddress("deltaT", &deltaT);
+	double x, y;
+	//posTree->SetBranchAddress("lercheX98Pos", &x);
+	//posTree->SetBranchAddress("lercheY98Pos", &y);
+	
+	cout << "Copying tree using selection. This may take a moment." << endl;
+	TFile *fTemp = new TFile("plotdriftmap_temp.root", "RECREATE");
+	TTree *tSelection = eventTree->CopyTree(inCut);
+	cout << tSelection->GetEntries() << " events selected based on your cut." << endl;
+	tSelection->SetBranchAddress("lercheX98Pos", &x);
+	tSelection->SetBranchAddress("lercheY98Pos", &y);
+	tSelection->SetBranchAddress("deltaT", &deltaT);
+	rootFile->cd();
+	vector<int> hits((98*98)+2);
+	
+	for(int i=0;i < tSelection->GetEntries();i++)
 	{
-		
+		tSelection->GetEntry(i);
+		int bin = hDTMap->Fill(x,y,deltaT);
+		hits.at(bin)++;
+		if (i % 1000 == 0) {
+			cout << "Processing event " << i << ", x=" << x << ", y=" << y << " " << "dt=" << deltaT << " ";
+			cout << "bin=" << bin << endl;
+		}
 	}
+
+	cout << "Printing bin hits..." << endl;
+	// Average drift time for each pixel depending on how many Fill() calls we made
+	for (size_t k=1;k <= hDTMap->GetSize();k++) {
+		if(hits.at(k) != 0)
+			hDTMap->SetBinContent(k, hDTMap->GetBinContent(k)/hits.at(k));
+		cout << hits.at(k) << " ";
+	}
+	cout << endl;
+			
+	delete tSelection;
+	fTemp->Close();
+	//t50Tree->ResetBranchAddress(t50Tree->GetBranch("deltaT"));
+	//posTree->ResetBranchAddress(posTree->GetBranch("lercheX98Pos"));
+	//posTree->ResetBranchAddress(posTree->GetBranch("lercheY98Pos"));
+	rootFile->cd();
+	hDTMap->GetXaxis()->SetTitle("X Position (mm)");
+	hDTMap->GetYaxis()->SetTitle("Y Position (mm)");
+	hDTMap->Draw("colz");
 	return hDTMap;
-}*/
+}
