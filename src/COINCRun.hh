@@ -53,7 +53,7 @@ class COINCRun: public PACSSRun
 		// Save the histograms to file for loading later
 		void				SaveHistogram(string histName, string hFileName);
 		// Other useful functions
-		void SetHistStyles(string title, string xTitle, string yTitle, int lineColor=0, int fillStyle=0);
+		void SetHistStyles(TH1D *hist,string title, string xTitle, string yTitle, int lineColor=0, int fillStyle=0);
 
 
 		// Plotting functions
