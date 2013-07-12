@@ -52,6 +52,9 @@ class COINCRun: public PACSSRun
 		TCanvas		 *GetCanvas(string canvName);
 		// Save the histograms to file for loading later
 		void				SaveHistogram(string histName, string hFileName);
+		// Other useful functions
+		void SetHistStyles(string title, string xTitle, string yTitle, int lineColor=0, int fillStyle=0);
+
 
 		// Plotting functions
 		TObjArray* PlotEnergyHist(TCut inCut="",string plotArgsGE="(65536,0.0,6.0e6)",string plotArgslYSO="(3048,-10.0,2023.0)");
