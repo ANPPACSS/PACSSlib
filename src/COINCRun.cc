@@ -187,7 +187,7 @@ void COINCRun::SaveHistogram(string histName, string hFileName)
 
 // Set the commonly used histogram labels/fill flags
 // use &hist to avoid making a copy (and thus having to return) the pointer
-void SetHistStyles(TH1D* &hist, string title, string xTitle, string yTitle, int lineColor, int fillStyle)
+TH1D *SetHistStyles(TH1D *hist, string title, string xTitle, string yTitle, int lineColor, int fillStyle)
 {
 	hist->SetTitle(title.c_str());
 	hist->GetXaxis()->SetTitle(xTitle.c_str());
