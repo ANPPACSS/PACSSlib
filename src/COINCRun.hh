@@ -10,17 +10,31 @@ class COINCRun: public PACSSRun
 	protected:
 		// Event type
 		COINCEvent *event;
+		
 		// Analysis stuff
+		// 98 lerche, gauss slide positions; corresponding chi2 vectors
 		TFile *posFile;
 		TTree *posTree;
+		double lXPos, lYPos;
+
+		// Differentiated waveform; IMax
 		TFile *wfDiffFile;
 		TTree *wfDiffTree;
+		
+		// T50Ge (sample); T50LYSO (sample); deltaT= (T50Ge-T50LYSO)*10
 		TFile *t50File;
 		TTree *t50Tree;
+		int t50LYSO, t50Ge, deltaT;
+
+		// Avg_end - avg_begin energy values
 		TFile *eSimpleFile;
 		TTree *eSimpleTree;
+		
+		// Flood corrected charge vectors
 		TFile *floodFile;
 		TTree *floodTree;
+		
+		// Slide position analysis with flood corrected values
 		TFile *posFCFile;
 		TTree *posFCTree;
 

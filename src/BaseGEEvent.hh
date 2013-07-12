@@ -57,8 +57,6 @@ class BaseGEEvent
 		void					 SetChannel(int newChannel);
 		void					 SetClockFreq(int newClockFreq); // in MHz
 
-		//void					 CalcT1ToT2Time(double fracA, double fracB, int &nTime, bool inNanoSecs=false);
-
 		// Other useful functions
 		void					 ClearEvent();
 

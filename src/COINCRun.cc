@@ -27,6 +27,8 @@ COINCRun::COINCRun(string newFileName): PACSSRun(newFileName)
 	if(posFile)
 	{
 		posTree = (TTree*)posFile->Get("98Pos");
+		posTree->SetBranchAddress("lercheX98Pos", &lXPos);
+		posTree->SetBranchAddress("lercheY98Pos", &lYPos);
 		rootFile->cd();
 		eventTree->AddFriend(posTree);
 	}
@@ -49,6 +51,9 @@ COINCRun::COINCRun(string newFileName): PACSSRun(newFileName)
 	if(t50File)
 	{
 		t50Tree = (TTree*)t50File->Get("T50Samples");
+		t50Tree->SetBranchAddress("t50LYSO", &t50LYSO);
+		t50Tree->SetBranchAddress("t50Ge", &t50Ge);
+		t50Tree->SetBranchAddress("deltaT", &deltaT);
 		rootFile->cd();
 		eventTree->AddFriend(t50Tree);
 	}
@@ -64,7 +69,7 @@ COINCRun::COINCRun(string newFileName): PACSSRun(newFileName)
 		eventTree->AddFriend(eSimpleTree);
 	}
 	// Flood field correction factors
-	/*aName = fileName;
+	aName = fileName;
 	aName.erase(aName.size()-5, 5); // erase the last 5 characters (.root)
 	aName += "_floodcorrect.root";
 	floodFile = new TFile(aName.c_str(), "READ");
@@ -73,19 +78,19 @@ COINCRun::COINCRun(string newFileName): PACSSRun(newFileName)
 		floodTree = (TTree*)floodFile->Get("FloodCorrect");
 		rootFile->cd();
 		eventTree->AddFriend(floodTree);
-	}*/
+	}
 
 // Flood field corrected positions
-	/*aName = fileName;
+	aName = fileName;
 	aName.erase(aName.size()-5, 5); // erase the last 5 characters (.root)
-	aName += "_98pos.root";
+	aName += "_98posfc.root";
 	posFCFile = new TFile(aName.c_str(), "READ");
 	if(posFCFile)
 	{
 		posFCTree = (TTree*)posFCFile->Get("98Pos");
 		rootFile->cd();
 		eventTree->AddFriend(posFCTree);
-	}*/
+	}
 
   // How many events? iEvent = 0 from PACSSRun initialization
   numEvents = eventTree->GetEntries();
@@ -104,6 +109,10 @@ COINCRun::~COINCRun()
 		wfDiffFile->Close();
 	if(t50File)
 		t50File->Close();
+	if(floodFile)
+		floodFile->Close();
+	if(posFCFile)
+		posFCFile->Close();
 	rootFile->cd();
 	rootFile->Close();
 }
@@ -192,7 +201,7 @@ TObjArray* COINCRun::PlotEnergyHist(TCut inCut, string plotArgsGE, string plotAr
 	// Check for the TCanvas object existing. Not in gDirectory, because that would make sense
 	if((cEnergyHist = GetCanvas(cName.c_str())) == 0)
 	{
-		cEnergyHist = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 1080);
+		cEnergyHist = new TCanvas(cName.c_str(), cDesc.c_str(), 500, 1000);
 		cEnergyHist->Divide(1, 2);
 	}
 
@@ -216,7 +225,7 @@ TObjArray* COINCRun::PlotEnergyHist(TCut inCut, string plotArgsGE, string plotAr
 	// Fill the histograms
 	int nPlotted = 0;
 	cEnergyHist->cd(1);
-	// Scale GE energy
+	// Draw Ge
 	string toDraw = "energyGE >> " + histName[1] + plotArgsGE;
 	nPlotted = eventTree->Draw(toDraw.c_str(), inCut, "NRQ");
 	hGE = (TH1D*)GetHistogram(histName[1]);
@@ -227,6 +236,7 @@ TObjArray* COINCRun::PlotEnergyHist(TCut inCut, string plotArgsGE, string plotAr
 	hGE->Draw();
 	cout << nPlotted << " drawn to GE histogram." << endl;
 	cEnergyHist->cd(2);
+	// Draw LYSO
 	toDraw = "energyLYSOGC >> " + histName[0] + plotArgsLYSO;
 	nPlotted = eventTree->Draw(toDraw.c_str(), inCut, "NRQ");
 	hLYSO = (TH1D*)GetHistogram(histName[0]);
@@ -1615,39 +1625,36 @@ TH2D* COINCRun::PlotDriftTimeMap(TCut inCut, string plotArgs)
 	else
 		hDTMap = new TH2D(histName.c_str(), "Drift Time Map", 98, 0.0, 49.0, 98, 0.0, 49.0);
 	
-	int deltaT;
-  //t50Tree->SetBranchAddress("deltaT", &deltaT);
-	double x, y;
-	//posTree->SetBranchAddress("lercheX98Pos", &x);
-	//posTree->SetBranchAddress("lercheY98Pos", &y);
-	
 	cout << "Copying tree using selection. This may take a moment." << endl;
 	TFile *fTemp = new TFile("plotdriftmap_temp.root", "RECREATE");
 	TTree *tSelection = eventTree->CopyTree(inCut);
 	cout << tSelection->GetEntries() << " events selected based on your cut." << endl;
-	tSelection->SetBranchAddress("lercheX98Pos", &x);
-	tSelection->SetBranchAddress("lercheY98Pos", &y);
-	tSelection->SetBranchAddress("deltaT", &deltaT);
+	posTree->AddFriend(eventTree);
+	TTree *tSelection2 = posTree->CopyTree(inCut);
+	cout << tSelection2->GetEntries() << " events in second tree." << endl;
+	t50Tree->AddFriend(eventTree);
+	TTree *tSelection3 = t50Tree->CopyTree(inCut);
+	cout << tSelection3->GetEntries() << " events in third tree." << endl;
 	rootFile->cd();
-	vector<int> hits((98*98)+2);
+	vector<int> hits(100*100);
 	
 	for(int i=0;i < tSelection->GetEntries();i++)
 	{
-		tSelection->GetEntry(i);
-		int bin = hDTMap->Fill(x,y,deltaT);
+		tSelection3->GetEntry(i);
+		tSelection2->GetEntry(i);
+		int bin = hDTMap->Fill(lXPos,lYPos,deltaT);
 		hits.at(bin)++;
-		if (i % 1000 == 0) {
-			cout << "Processing event " << i << ", x=" << x << ", y=" << y << " " << "dt=" << deltaT << " ";
-			cout << "bin=" << bin << endl;
+		if (i % 100 == 0) {
+			cout << "Processing event " << i << ", x=" << lXPos << ", y=" << lYPos << " " << "dt=" << deltaT << " ";
+			cout << "bin=" << bin << "(" << hits.at(bin) << ")" << endl;
 		}
 	}
 
-	cout << "Printing bin hits..." << endl;
+	cout << "Averaging histogram..." << endl;
 	// Average drift time for each pixel depending on how many Fill() calls we made
-	for (size_t k=1;k <= hDTMap->GetSize();k++) {
+	for (size_t k=101;k <= hDTMap->GetSize()-100;k++) {
 		if(hits.at(k) != 0)
 			hDTMap->SetBinContent(k, hDTMap->GetBinContent(k)/hits.at(k));
-		cout << hits.at(k) << " ";
 	}
 	cout << endl;
 			
