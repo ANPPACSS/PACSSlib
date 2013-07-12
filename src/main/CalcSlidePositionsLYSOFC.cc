@@ -37,6 +37,7 @@ void CalcSlidePosFC(string inFileName, string outFileName, int nSlidePos)
 	TTree *eventTree = (TTree*)rootFile->Get("LYSOEvents");
 	LYSOEvent *event = new LYSOEvent();
 	eventTree->SetBranchAddress("event", &event);
+	cout << eventTree->GetEntries() << " events in raw data file." << endl;
 
 	// Handle the output
 	TFile *fOut = new TFile(outFileName.c_str(), "RECREATE");
@@ -51,6 +52,8 @@ void CalcSlidePosFC(string inFileName, string outFileName, int nSlidePos)
 	TTree *tFC = (TTree*)fFC->Get("FloodCorrect");
 	vector<double> *chargeFC = new vector<double>();
 	tFC->SetBranchAddress("chargeFC", &chargeFC);
+
+	eventTree->AddFriend(tFC);
 
 	// Set the branch name depending on the number of sliding positions for clarity
 	string NPos = to_string(nSlidePos) + "Pos";
@@ -74,12 +77,12 @@ void CalcSlidePosFC(string inFileName, string outFileName, int nSlidePos)
 	tAnalysis->Branch(bName.c_str(), &chi2LY);	
  	cout << "ROOT file loaded, tree created." << endl;
 	
+	int nFilled = 0;
 	// Loop over all the events
   for(int i=0;i < eventTree->GetEntries();i++)
   {
 		// Grab this event
 		eventTree->GetEntry(i);
-		tFC->GetEntry(i);
 
 		event->SetChargeGC(*chargeFC);
 
@@ -90,12 +93,16 @@ void CalcSlidePosFC(string inFileName, string outFileName, int nSlidePos)
     if(i % 1000 == 0)
       cout << "Calculating positions for event " << i << ": " << "(" << gaussXPos << ", " << gaussYPos << ")" << endl;
 		tAnalysis->Fill();
+		nFilled++;
   }
-  
+
+	fOut->cd();
 	tAnalysis->Write();
+	fOut->Write();
 	fOut->Close();
+	fFC->Close();
   rootFile->Close();
-  cout << "Calculated positions written to 98PosFC tree in " << inFileName << endl;
+  cout << nFilled << " calculated positions written to 98PosFC tree in " << inFileName << endl;
   delete event;
 	return;
 }

@@ -26,14 +26,16 @@ COINCRun::COINCRun(string newFileName): PACSSRun(newFileName)
 	posFile = new TFile(aName.c_str(), "READ");
 	if(posFile)
 	{
-		posTree = (TTree*)posFile->Get("Analysis");
+		posTree = (TTree*)posFile->Get("98Pos");
+		posTree->SetBranchAddress("lercheX98Pos", &lXPos);
+		posTree->SetBranchAddress("lercheY98Pos", &lYPos);
 		rootFile->cd();
 		eventTree->AddFriend(posTree);
 	}
 	// Waveform analysis
 	aName = fileName;
 	aName.erase(aName.size()-5, 5); // erase the last 5 characters (.root)
-	aName += "_wfdiffimax.root";
+	aName += "_diffimax.root";
 	wfDiffFile = new TFile(aName.c_str(), "READ");
 	if(wfDiffFile)
 	{
@@ -44,11 +46,14 @@ COINCRun::COINCRun(string newFileName): PACSSRun(newFileName)
 	// T50 offset analysis
 	aName = fileName;
 	aName.erase(aName.size()-5, 5); // erase the last 5 characters (.root)
-	aName += "_t50offset.root";
+	aName += "_t50deltat.root";
 	t50File = new TFile(aName.c_str(), "READ");
 	if(t50File)
 	{
-		t50Tree = (TTree*)t50File->Get("T50Offset");
+		t50Tree = (TTree*)t50File->Get("T50Samples");
+		t50Tree->SetBranchAddress("t50LYSO", &t50LYSO);
+		t50Tree->SetBranchAddress("t50Ge", &t50Ge);
+		t50Tree->SetBranchAddress("deltaT", &deltaT);
 		rootFile->cd();
 		eventTree->AddFriend(t50Tree);
 	}
@@ -74,14 +79,15 @@ COINCRun::COINCRun(string newFileName): PACSSRun(newFileName)
 		rootFile->cd();
 		eventTree->AddFriend(floodTree);
 	}
-	// Flood field corrected positions
+
+// Flood field corrected positions
 	aName = fileName;
 	aName.erase(aName.size()-5, 5); // erase the last 5 characters (.root)
 	aName += "_98posfc.root";
 	posFCFile = new TFile(aName.c_str(), "READ");
 	if(posFCFile)
 	{
-		posFCTree = (TTree*)posFCFile->Get("98PosFC");
+		posFCTree = (TTree*)posFCFile->Get("98Pos");
 		rootFile->cd();
 		eventTree->AddFriend(posFCTree);
 	}
@@ -101,6 +107,12 @@ COINCRun::~COINCRun()
 		posFile->Close();
 	if(wfDiffFile)
 		wfDiffFile->Close();
+	if(t50File)
+		t50File->Close();
+	if(floodFile)
+		floodFile->Close();
+	if(posFCFile)
+		posFCFile->Close();
 	rootFile->cd();
 	rootFile->Close();
 }
@@ -173,6 +185,20 @@ void COINCRun::SaveHistogram(string histName, string hFileName)
 	return;
 }
 
+// Set the commonly used histogram labels/fill flags
+// use &hist to avoid making a copy (and thus having to return) the pointer
+void SetHistStyles(TH1D* &hist, string title, string xTitle, string yTitle, int lineColor, int fillStyle)
+{
+	hist->SetTitle(title.c_str());
+	hist->GetXaxis()->SetTitle(xTitle.c_str());
+	hist->GetYaxis()->SetTitle(yTitle.c_str());
+	hist->SetLineColor(lineColor);
+	hist->SetFillColor(lineColor);
+	hist->SetFillStyle(fillStyle);
+
+	return;
+}
+
 // Plot energy histograms from both detectors on one canvas
 TObjArray* COINCRun::PlotEnergyHist(TCut inCut, string plotArgsGE, string plotArgsLYSO)
 {
@@ -189,7 +215,7 @@ TObjArray* COINCRun::PlotEnergyHist(TCut inCut, string plotArgsGE, string plotAr
 	// Check for the TCanvas object existing. Not in gDirectory, because that would make sense
 	if((cEnergyHist = GetCanvas(cName.c_str())) == 0)
 	{
-		cEnergyHist = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 1080);
+		cEnergyHist = new TCanvas(cName.c_str(), cDesc.c_str(), 500, 1000);
 		cEnergyHist->Divide(1, 2);
 	}
 
@@ -213,24 +239,27 @@ TObjArray* COINCRun::PlotEnergyHist(TCut inCut, string plotArgsGE, string plotAr
 	// Fill the histograms
 	int nPlotted = 0;
 	cEnergyHist->cd(1);
-	// Scale GE energy
+	// Draw Ge
 	string toDraw = "energyGE >> " + histName[1] + plotArgsGE;
 	nPlotted = eventTree->Draw(toDraw.c_str(), inCut, "NRQ");
 	hGE = (TH1D*)GetHistogram(histName[1]);
-	hGE->SetTitle("GE Energy");
+	SetHistStyles(hGE, "GE Energy", "Energy (arb)", "Counts", kRed, 1);
+	/*hGE->SetTitle("GE Energy");
   hGE->GetXaxis()->SetTitle("Energy (arb)");
   hGE->GetYaxis()->SetTitle("Counts");
-  hGE->SetFillColor(kRed);
+  hGE->SetFillColor(kRed);*/
 	hGE->Draw();
 	cout << nPlotted << " drawn to GE histogram." << endl;
 	cEnergyHist->cd(2);
+	// Draw LYSO
 	toDraw = "energyLYSOGC >> " + histName[0] + plotArgsLYSO;
 	nPlotted = eventTree->Draw(toDraw.c_str(), inCut, "NRQ");
 	hLYSO = (TH1D*)GetHistogram(histName[0]);
-	hLYSO->SetTitle("LYSO Energy");
+	SetHistStyles(hLYSO, "LYSO Energy", "Energy (pC)", "Counts", kBlue, 1);
+	/*hLYSO->SetTitle("LYSO Energy");
 	hLYSO->GetXaxis()->SetTitle("Energy (pC)");
 	hLYSO->GetYaxis()->SetTitle("Counts");
-	hLYSO->SetFillColor(kBlue);
+	hLYSO->SetFillColor(kBlue);*/
 	hLYSO->Draw();
 	cout << nPlotted << " drawn to LYSO histogram." << endl;
 	TObjArray *ret = new TObjArray();
@@ -251,7 +280,7 @@ TH1D* COINCRun::PlotEnergySimple(TCut inCut, string plotArgs)
 
 	// Check for the TCanvas object existing. Not in gDirectory, because that would make sense
 	if((cEnergyHist = GetCanvas(cName.c_str())) == 0)
-		cEnergyHist = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 600);
+		cEnergyHist = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 800);
 
 	// Make sure we don't have the histograms already available to us. Closing the canvas window
 	// does not delete the histograms, no need to recreate them if they exist
@@ -367,7 +396,7 @@ TObjArray* COINCRun::PlotWaveformWithT50(int nEvent, int nBL)
 
 	// Check for the TCanvas object existing. Not in gDirectory, because that would make sense
 	if((cWaveforms = GetCanvas(cName.c_str())) == 0)
-		cWaveforms = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 600);
+		cWaveforms = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 800);
 	if((hRaw = (TH1D*)GetHistogram(histName[0])) == 0)
 	{
 		hRaw = new TH1D(histName[0].c_str(), "Raw Waveform", wfRaw.size(), 0.0, (double)(wfRaw.size())*cConv);
@@ -429,7 +458,7 @@ TH2D* COINCRun::PlotWaveformStack(TCut inCut, int nBL, double yMin, double yMax,
 	int wfLen = (int)event->GetWFRaw().size();
 
 	if((cWaveforms = GetCanvas(cName.c_str())) == 0)
-		cWaveforms = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 600);
+		cWaveforms = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 800);
 	// Check for one of the histograms existing
 	if((hWaves = (TH2D*)GetHistogram(histName)) == 0)
 		hWaves = new TH2D(histName.c_str(), "Raw Waveforms, Stacked", wfLen, 0, (wfLen-1)*(1000/event->GetClockFreq()), yMax-yMin, yMin, yMax);
@@ -440,8 +469,9 @@ TH2D* COINCRun::PlotWaveformStack(TCut inCut, int nBL, double yMin, double yMax,
 		hWaves->Draw("colz");
 		return hWaves;
 	}
-	int offset;
-	t50Tree->SetBranchAddress("T50Offset", &offset);
+	int t50LYSO, t50GE;
+	t50Tree->SetBranchAddress("t50LYSO", &t50LYSO);
+	t50Tree->SetBranchAddress("t50Ge", &t50GE);
 
 	// Create a new tree with the cut
 	cout << "Copying tree using selection. This may take a moment." << endl;
@@ -458,7 +488,7 @@ TH2D* COINCRun::PlotWaveformStack(TCut inCut, int nBL, double yMin, double yMax,
 		for(size_t k=0;k < rawWF.size();k++)
 		{
 			if(useT50)
-				hWaves->Fill((k+offset)*(1000/event->GetClockFreq()), rawWF.at(k));
+				hWaves->Fill((k+(t50GE-t50LYSO))*(1000/event->GetClockFreq()), rawWF.at(k));
 			else
 				hWaves->Fill(k*(1000/event->GetClockFreq()), rawWF.at(k));
 		}
@@ -473,7 +503,8 @@ TH2D* COINCRun::PlotWaveformStack(TCut inCut, int nBL, double yMin, double yMax,
 	delete tSelection;
 	fTemp->Close();
 	rootFile->cd();
-	t50Tree->ResetBranchAddress(t50Tree->GetBranch("T50Offset"));
+	t50Tree->ResetBranchAddress(t50Tree->GetBranch("t50Ge"));
+	t50Tree->ResetBranchAddress(t50Tree->GetBranch("t50LYSO"));
 	return hWaves;
 }
 
@@ -493,7 +524,7 @@ TH2D* COINCRun::PlotDiffWaveformStack(TCut inCut, double yMin, double yMax)
 	int wfLen = (int)wfDiff->size();
 
 	if((cWaveforms = GetCanvas(cName.c_str())) == 0)
-		cWaveforms = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 600);
+		cWaveforms = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 800);
 	// Check for one of the histograms existing
 	if((hWaves = (TH2D*)GetHistogram(histName)) == 0)
 		hWaves = new TH2D(histName.c_str(), "Diff Waveforms, Stacked", wfLen, 0, (wfLen-1)*(1000/event->GetClockFreq()), yMax-yMin, yMin, yMax);
@@ -546,7 +577,7 @@ TH1D* COINCRun::PlotAverageWaveform(TCut inCut, int nBL, bool useT50)
 	string histName = hPrefix + "hAvgWaveform" + cutName;
 
 	if((cAvgWaveform = GetCanvas(cName.c_str())) == 0)
-		cAvgWaveform = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 600);
+		cAvgWaveform = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 800);
 	// Check for one of the histograms existing
 	if((hAvgWave = (TH1D*)GetHistogram(histName)) == 0)
 		hAvgWave = new TH1D(histName.c_str(), "Average Waveform",(int)event->GetWFRaw().size(), 0, ((int)event->GetWFRaw().size())*(1000/event->GetClockFreq()));
@@ -557,8 +588,9 @@ TH1D* COINCRun::PlotAverageWaveform(TCut inCut, int nBL, bool useT50)
 		hAvgWave->Draw();
 		return hAvgWave;
 	}
-	int offset;
-	t50Tree->SetBranchAddress("T50Offset", &offset);
+	int t50GE, t50LYSO;
+	t50Tree->SetBranchAddress("t50LYSO", &t50LYSO);
+	t50Tree->SetBranchAddress("t50Ge", &t50GE);
 
 	// Create a new tree with the cut
 	cout << "Copying tree using selection. This may take a moment." << endl;
@@ -575,7 +607,7 @@ TH1D* COINCRun::PlotAverageWaveform(TCut inCut, int nBL, bool useT50)
 		for(size_t k=0;k < rawWF.size();k++)
 		{
 			if(useT50)
-				hAvgWave->Fill((k+offset)*(1000/event->GetClockFreq()), rawWF[k]);
+				hAvgWave->Fill((k+(t50GE-t50LYSO))*(1000/event->GetClockFreq()), rawWF[k]);
 			else
 				hAvgWave->Fill(k*(1000/event->GetClockFreq()), rawWF[k]);
 		}
@@ -592,7 +624,8 @@ TH1D* COINCRun::PlotAverageWaveform(TCut inCut, int nBL, bool useT50)
 	delete tSelection;
 	fTemp->Close();
 	rootFile->cd();
-	t50Tree->ResetBranchAddress(t50Tree->GetBranch("T50Offset"));
+	t50Tree->ResetBranchAddress(t50Tree->GetBranch("t50Ge"));
+	t50Tree->ResetBranchAddress(t50Tree->GetBranch("t50LYSO"));
 
 	return hAvgWave;
 }
@@ -612,7 +645,7 @@ TH1D* COINCRun::PlotAverageDiffWaveform(TCut inCut)
 	int wfLen = (int)wfDiff->size();
 
 	if((cAvgWaveform = GetCanvas(cName.c_str())) == 0)
-		cAvgWaveform = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 600);
+		cAvgWaveform = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 800);
 	// Check for one of the histograms existing
 	if((hAvgWave = (TH1D*)GetHistogram(histName)) == 0)
 		hAvgWave = new TH1D(histName.c_str(), "Average Diff Waveform",wfLen,0,(wfLen-1)*(1000/event->GetClockFreq()));
@@ -667,7 +700,7 @@ TH1D* COINCRun::PlotTimeBetweenCoincEvents(TCut inCut, string plotArgs, bool use
 
 
 	if((cCoincDT = GetCanvas(cName.c_str())) == 0)
-		cCoincDT = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 600);
+		cCoincDT = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 800);
 	if(!(hCoincDT = (TH1D*)GetHistogram(histName)) == 0)
 	{
 		cout << "Histograms found in gDirectory. Delete them or change the names to redraw." << endl;
@@ -720,7 +753,7 @@ TH2D* COINCRun::PlotChargeMap(TCut inCut, bool gc)
 	histName = hPrefix + "hChargeMap" + cutName + (gc ? "gc" : "");
 
 	if((cChargeMap = GetCanvas(cName.c_str())) == 0)
-		cChargeMap = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 600);
+		cChargeMap = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 800);
 	if((hCharge = (TH2D*)GetHistogram(histName)) == 0)
 		hCharge = new TH2D(histName.c_str(), "Charge Map", 8, 0.0, 49.0, 8, 0.0, 49.0);
 	else
@@ -856,7 +889,7 @@ TH2D* COINCRun::PlotSGPosMap(TCut inCut, string plotArgs)
 	histName = hPrefix + "hSGPosMap" + cutName;
 
 	if((cSGPosMap = GetCanvas(cName.c_str())) == 0)
-		cSGPosMap = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 600);
+		cSGPosMap = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 800);
 	if(!(hSGPos = (TH2D*)GetHistogram(histName)) == 0)
 	{
 		cout << "Histogram found in gDirectory." << endl;
@@ -1189,7 +1222,7 @@ TH2D* COINCRun::PlotSLPosMap(TCut inCut, string plotArgs)
 	histName = hPrefix + "hSLPosMap" + cutName;
 
 	if((cSLPosMap = GetCanvas(cName.c_str())) == 0)
-		cSLPosMap = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 600);
+		cSLPosMap = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 800);
 	if(!(hSLPos = (TH2D*)GetHistogram(histName)) == 0)
 	{
 		cout << "Histogram found in gDirectory." << endl;
@@ -1522,7 +1555,7 @@ TH2D* COINCRun::PlotIMaxOverEVsE(TCut inCut, string plotArgs)
 	histName = hPrefix + "hAOverEMap" + cutName;
 	
 	if((cAOverE = GetCanvas(cName.c_str())) == 0)
-		cAOverE = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 600);
+		cAOverE = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 800);
 	if((hAOverE = (TH2D*)GetHistogram(histName)) == 0)
 	{
 		hAOverE = new TH2D();
@@ -1556,7 +1589,7 @@ TH1D* COINCRun::PlotIMaxOverEDist(TCut inCut, string plotArgs)
 	histName = hPrefix + "hAOverEDist" + cutName;
 	
 	if((cAOverE = GetCanvas(cName.c_str())) == 0)
-		cAOverE = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 600);
+		cAOverE = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 800);
 	if((hAOverE = (TH1D*)GetHistogram(histName)) == 0)
 	{
 		hAOverE = new TH1D();
@@ -1579,4 +1612,76 @@ TH1D* COINCRun::PlotIMaxOverEDist(TCut inCut, string plotArgs)
 	cout << nPlotted << " events plotted." << endl;
 	hAOverE->Draw();
 	return hAOverE;
+}
+
+TH2D* COINCRun::PlotDriftTimeMap(TCut inCut, string plotArgs)
+{
+	TCanvas *cDTMap;
+	TH2D *hDTMap;
+	string cName, cDesc, histName;
+	string cutName = "_" + (string)inCut.GetName();
+	cName = cPrefix + "cPlotDTMap" + cutName;
+	cDesc = "Drift Time Map";
+	histName = hPrefix + "hDTMap" + cutName;
+
+	// Check for the TCanvas object existing. Not in gDirectory, because that would make sense
+	if((cDTMap = GetCanvas(cName.c_str())) == 0)
+		cDTMap = new TCanvas(cName.c_str(), cDesc.c_str(), 800, 800);
+
+	// Make sure we don't have the histograms already available to us. Closing the canvas window
+	// does not delete the histograms, no need to recreate them if they exist
+	// found - will need to process
+	if(!((hDTMap = (TH2D*)GetHistogram(histName)) == 0))
+	{
+		cout << "Histogram found in gDirectory. Delete them or change the names to redraw." << endl;
+		cDTMap->cd();
+		hDTMap->Draw();
+  	return hDTMap;
+	}
+	else
+		hDTMap = new TH2D(histName.c_str(), "Drift Time Map", 98, 0.0, 49.0, 98, 0.0, 49.0);
+	
+	cout << "Copying tree using selection. This may take a moment." << endl;
+	TFile *fTemp = new TFile("plotdriftmap_temp.root", "RECREATE");
+	TTree *tSelection = eventTree->CopyTree(inCut);
+	cout << tSelection->GetEntries() << " events selected based on your cut." << endl;
+	posTree->AddFriend(eventTree);
+	TTree *tSelection2 = posTree->CopyTree(inCut);
+	cout << tSelection2->GetEntries() << " events in second tree." << endl;
+	t50Tree->AddFriend(eventTree);
+	TTree *tSelection3 = t50Tree->CopyTree(inCut);
+	cout << tSelection3->GetEntries() << " events in third tree." << endl;
+	rootFile->cd();
+	vector<int> hits(100*100);
+	
+	for(int i=0;i < tSelection->GetEntries();i++)
+	{
+		tSelection3->GetEntry(i);
+		tSelection2->GetEntry(i);
+		int bin = hDTMap->Fill(lXPos,lYPos,deltaT);
+		hits.at(bin)++;
+		if (i % 100 == 0) {
+			cout << "Processing event " << i << ", x=" << lXPos << ", y=" << lYPos << " " << "dt=" << deltaT << " ";
+			cout << "bin=" << bin << "(" << hits.at(bin) << ")" << endl;
+		}
+	}
+
+	cout << "Averaging histogram..." << endl;
+	// Average drift time for each pixel depending on how many Fill() calls we made
+	for (size_t k=101;k <= hDTMap->GetSize()-100;k++) {
+		if(hits.at(k) != 0)
+			hDTMap->SetBinContent(k, hDTMap->GetBinContent(k)/hits.at(k));
+	}
+	cout << endl;
+			
+	delete tSelection;
+	fTemp->Close();
+	//t50Tree->ResetBranchAddress(t50Tree->GetBranch("deltaT"));
+	//posTree->ResetBranchAddress(posTree->GetBranch("lercheX98Pos"));
+	//posTree->ResetBranchAddress(posTree->GetBranch("lercheY98Pos"));
+	rootFile->cd();
+	hDTMap->GetXaxis()->SetTitle("X Position (mm)");
+	hDTMap->GetYaxis()->SetTitle("Y Position (mm)");
+	hDTMap->Draw("colz");
+	return hDTMap;
 }

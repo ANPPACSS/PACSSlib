@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
 			inFileName = (string)argv[1];
 			outFileName = (string)argv[2];
       nBLSamples = atoi(argv[3]);
-      cout << "Calculating DiffWave and IMax with baseline avgeraged over " << nBLSamples << " samples." << endl;
+      cout << "Calculating DiffWave and IMax with baseline averaged over " << nBLSamples << " samples." << endl;
       break;
     default:
       cout << "Usage: " << argv[0] << " [COINC ROOT file] [analysis output ROOT file] [n bl samples]" << endl;

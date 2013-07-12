@@ -44,6 +44,7 @@ void COINCEvent::CopyEvents(const LYSOEvent &newLYSO, const GEEvent &newGE)
 	wfDiff = newGE.GetWFDiff();
 	channel = newGE.GetChannel();
 	clockFreq = newGE.GetClockFreq();
+	wfLYSO = newGE.GetWFLYSO();
 }
 
 void COINCEvent::Clear()

@@ -10,17 +10,31 @@ class COINCRun: public PACSSRun
 	protected:
 		// Event type
 		COINCEvent *event;
+		
 		// Analysis stuff
+		// 98 lerche, gauss slide positions; corresponding chi2 vectors
 		TFile *posFile;
 		TTree *posTree;
+		double lXPos, lYPos;
+
+		// Differentiated waveform; IMax
 		TFile *wfDiffFile;
 		TTree *wfDiffTree;
+		
+		// T50Ge (sample); T50LYSO (sample); deltaT= (T50Ge-T50LYSO)*10
 		TFile *t50File;
 		TTree *t50Tree;
+		int t50LYSO, t50Ge, deltaT;
+
+		// Avg_end - avg_begin energy values
 		TFile *eSimpleFile;
 		TTree *eSimpleTree;
+		
+		// Flood corrected charge vectors
 		TFile *floodFile;
 		TTree *floodTree;
+		
+		// Slide position analysis with flood corrected values
 		TFile *posFCFile;
 		TTree *posFCTree;
 
@@ -38,6 +52,9 @@ class COINCRun: public PACSSRun
 		TCanvas		 *GetCanvas(string canvName);
 		// Save the histograms to file for loading later
 		void				SaveHistogram(string histName, string hFileName);
+		// Other useful functions
+		void SetHistStyles(string title, string xTitle, string yTitle, int lineColor=0, int fillStyle=0);
+
 
 		// Plotting functions
 		TObjArray* PlotEnergyHist(TCut inCut="",string plotArgsGE="(65536,0.0,6.0e6)",string plotArgslYSO="(3048,-10.0,2023.0)");
@@ -63,6 +80,7 @@ class COINCRun: public PACSSRun
 		TObjArray* PlotSLPosProj(TCut inCut="", string plotArgsX="(98,0.0,49.0)", string plotArgsY="(98,0.0,49.0)");
 		TH2D* 		 PlotIMaxOverEVsE(TCut inCut, string plotArgs="(65536,0.0,6.0e6,5000, 0.0, 10e-3)");
 		TH1D*			 PlotIMaxOverEDist(TCut inCut, string plotArgs="(5000, 0.0, 10e-3)");
+		TH2D*			 PlotDriftTimeMap(TCut inCut, string plotArgs="(49, 0.0, 49.0, 49, 0.0, 49.0)");
 
 		ClassDef(COINCRun, 1);
 };

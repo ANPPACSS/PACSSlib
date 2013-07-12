@@ -347,11 +347,11 @@ double PACSSAnalysis::CalcDiffMin(vector<double> aCurrentWave)
 	return diffMin;
 }
 
-int PACSSAnalysis::CalcT50Offset(vector<double> aWave, int preTrigDelay)
+int PACSSAnalysis::CalcT50Offset(vector<double> aWave, int nBL)
 {
 	TH1D hWF("hWF", "", (int)aWave.size(), 0, (int)aWave.size()-1);
 	// Subtract baseline
-	aWave = SubtractBaseline(aWave, 300);
+	aWave = SubtractBaseline(aWave, nBL);
 	for(size_t i=0;i < aWave.size();i++)
 		hWF.Fill((int)i, aWave.at(i));
 
@@ -361,7 +361,7 @@ int PACSSAnalysis::CalcT50Offset(vector<double> aWave, int preTrigDelay)
 	while(hWF.GetBinContent(iBin) > (maxVal*0.5))
 		iBin--;
 
-	return iBin - preTrigDelay;
+	return iBin;
 }
 
 double PACSSAnalysis::CalcEnergySimple(vector<double> aWave, int nBL, int nAvg)
@@ -378,4 +378,45 @@ double PACSSAnalysis::CalcEnergySimple(vector<double> aWave, int nBL, int nAvg)
 
 	// Assume baseline is 0
 	return highAvg;
+}
+
+vector<double> PACSSAnalysis::PoleZeroCorrect(vector<double> aWave, double decayConst)
+{
+	if(aWave.size() <= 1)
+  {
+	  cout << "Waveform is 1 sample or less! Returning original waveform..." << endl;
+		return aWave;
+  }
+
+	double multiplier = exp(-1.0/decayConst);
+	vector<double> ret(aWave.begin(), aWave.end());
+	for(int i=1;i < (int)ret.size();i++)
+	{
+		ret.at(i) = ret.at(i-1) - multiplier*aWave.at(i-1) + aWave.at(i);
+	}
+	return ret;
+}
+
+vector<double> PACSSAnalysis::TrapezoidalFilter(vector<double> aWave, int nPeak, int nGap, double PZCorr)
+{
+	if(aWave.size() <= 1)
+	{
+		cout << "Waveform is 1 sample or less! Returning original waveform..." << endl;
+		return aWave;
+	}
+
+	vector<double> temp(aWave.size());
+	vector<double> trapWave(aWave);
+	temp.at(0) = aWave.at(0);
+	trapWave.at(0) = (PZCorr+1)*aWave.at(0);
+	double scratch = 0.0;
+	for(int i=1;i < (int)aWave.size();i++)
+	{
+		scratch = aWave.at(i) - ((i >= nPeak) ? aWave.at(i-nPeak) : 0.0)
+		 - ((i >= nGap + nPeak) ? aWave.at(i - nGap - nPeak) : 0.0)
+		 + ((i >= nGap + 2*nPeak) ? aWave.at(i - nGap - 2*nPeak) : 0.0);
+		temp.at(i) = temp.at(i-1) + scratch;
+		trapWave.at(i) = trapWave.at(i-1) + temp.at(i) + PZCorr*scratch;
+	}
+	return trapWave;
 }
