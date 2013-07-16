@@ -187,7 +187,7 @@ void COINCRun::SaveHistogram(string histName, string hFileName)
 
 // Set the commonly used histogram labels/fill flags
 // use &hist to avoid making a copy (and thus having to return) the pointer
-TH1D *SetHistStyles(TH1D *hist, string title, string xTitle, string yTitle, int lineColor, int fillStyle)
+/*TH1D *SetHistStyles(TH1D *hist, string title, string xTitle, string yTitle, int lineColor, int fillStyle)
 {
 	hist->SetTitle(title.c_str());
 	hist->GetXaxis()->SetTitle(xTitle.c_str());
@@ -197,7 +197,7 @@ TH1D *SetHistStyles(TH1D *hist, string title, string xTitle, string yTitle, int 
 	hist->SetFillStyle(fillStyle);
 
 	return;
-}
+}*/
 
 // Plot energy histograms from both detectors on one canvas
 TObjArray* COINCRun::PlotEnergyHist(TCut inCut, string plotArgsGE, string plotArgsLYSO)
@@ -243,11 +243,11 @@ TObjArray* COINCRun::PlotEnergyHist(TCut inCut, string plotArgsGE, string plotAr
 	string toDraw = "energyGE >> " + histName[1] + plotArgsGE;
 	nPlotted = eventTree->Draw(toDraw.c_str(), inCut, "NRQ");
 	hGE = (TH1D*)GetHistogram(histName[1]);
-	SetHistStyles(hGE, "GE Energy", "Energy (arb)", "Counts", kRed, 1);
-	/*hGE->SetTitle("GE Energy");
+	//SetHistStyles(hGE, "GE Energy", "Energy (arb)", "Counts", kRed, 1);
+	hGE->SetTitle("GE Energy");
   hGE->GetXaxis()->SetTitle("Energy (arb)");
   hGE->GetYaxis()->SetTitle("Counts");
-  hGE->SetFillColor(kRed);*/
+  hGE->SetFillColor(kRed);
 	hGE->Draw();
 	cout << nPlotted << " drawn to GE histogram." << endl;
 	cEnergyHist->cd(2);
@@ -255,11 +255,11 @@ TObjArray* COINCRun::PlotEnergyHist(TCut inCut, string plotArgsGE, string plotAr
 	toDraw = "energyLYSOGC >> " + histName[0] + plotArgsLYSO;
 	nPlotted = eventTree->Draw(toDraw.c_str(), inCut, "NRQ");
 	hLYSO = (TH1D*)GetHistogram(histName[0]);
-	SetHistStyles(hLYSO, "LYSO Energy", "Energy (pC)", "Counts", kBlue, 1);
-	/*hLYSO->SetTitle("LYSO Energy");
+	//SetHistStyles(hLYSO, "LYSO Energy", "Energy (pC)", "Counts", kBlue, 1);
+	hLYSO->SetTitle("LYSO Energy");
 	hLYSO->GetXaxis()->SetTitle("Energy (pC)");
 	hLYSO->GetYaxis()->SetTitle("Counts");
-	hLYSO->SetFillColor(kBlue);*/
+	hLYSO->SetFillColor(kBlue);
 	hLYSO->Draw();
 	cout << nPlotted << " drawn to LYSO histogram." << endl;
 	TObjArray *ret = new TObjArray();
