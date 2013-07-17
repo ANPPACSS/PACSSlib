@@ -420,3 +420,10 @@ vector<double> PACSSAnalysis::TrapezoidalFilter(vector<double> aWave, int nPeak,
 	}
 	return trapWave;
 }
+
+void PACSSAnalysis::ChanNumToXYPos(int channel, int &x, int &y)
+{
+	x = 6.125*((channel % 8) + 0.5);
+	y = 6.125*(floor(channel / 8.0) + 0.5);
+	return;
+}
