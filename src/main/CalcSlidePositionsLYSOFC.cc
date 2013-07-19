@@ -53,8 +53,6 @@ void CalcSlidePosFC(string inFileName, string outFileName, int nSlidePos)
 	vector<double> *chargeFC = new vector<double>();
 	tFC->SetBranchAddress("chargeFC", &chargeFC);
 
-	eventTree->AddFriend(tFC);
-
 	// Set the branch name depending on the number of sliding positions for clarity
 	string NPos = to_string(nSlidePos) + "Pos";
 	// Check if the branch for this analysis exists. If so, overwrite it, if not, make it
@@ -83,6 +81,7 @@ void CalcSlidePosFC(string inFileName, string outFileName, int nSlidePos)
   {
 		// Grab this event
 		eventTree->GetEntry(i);
+		tFC->GetEntry(i);
 
 		event->SetChargeGC(*chargeFC);
 
