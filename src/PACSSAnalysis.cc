@@ -364,6 +364,24 @@ int PACSSAnalysis::CalcT50Offset(vector<double> aWave, int nBL)
 	return iBin;
 }
 
+int PACSSAnalysis::CalcT90Offset(vector<double> aWave, int nBL)
+{
+	TH1D hWF("hWF", "", (int)aWave.size(), 0, (int)aWave.size()-1);
+	// Subtract baseline
+	aWave = SubtractBaseline(aWave, nBL);
+	for(size_t i=0;i < aWave.size();i++)
+		hWF.Fill((int)i, aWave.at(i));
+
+	int maxBin = hWF.GetMaximumBin();
+	int iBin = maxBin; // Start at the maximum and work backwards
+	double maxVal = hWF.GetBinContent(maxBin);
+	while(hWF.GetBinContent(iBin) > (maxVal*0.9))
+		iBin--;
+
+	return iBin;
+}
+
+
 double PACSSAnalysis::CalcEnergySimple(vector<double> aWave, int nBL, int nAvg)
 {
 	// Subtract the baseline

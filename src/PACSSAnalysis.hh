@@ -31,6 +31,7 @@ class PACSSAnalysis
 		static double CalcIMax(vector<double> aCurrentWave);
 		static double CalcDiffMin(vector<double> aCurrentWave);
 		static int CalcT50Offset(vector<double> aWave, int nBL);
+		static int CalcT90Offset(vector<double> aWave, int nBL);
 		static double CalcEnergySimple(vector<double> aWave, int nBL, int nAvg);
 		static vector<double> PoleZeroCorrect(vector<double> aWave, double decayConst);
 		static vector<double> TrapezoidalFilter(vector<double> aWave, int nPeak, int nGap, double PZCorr);
