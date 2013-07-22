@@ -58,16 +58,14 @@ void CalcSlidePos(string inFileName, string outFileName, int nSlidePos)
  	cout << "ROOT file loaded, tree created." << endl;
 	
 	// Loop over all the events
-	vector<double> vCharge;
   for(int i=0;i < eventTree->GetEntries();i++)
   {
 		// Grab this event
 		eventTree->GetEntry(i);
-		vCharge = event->GetChargeGC();
 
 		// Do analysis
 		//PACSSAnalysis::CalcSlidingGaussXYPosition(event, gaussXPos, chi2GX, gaussYPos, chi2GY, nSlidePos);
-		PACSSAnalysis::CalcSlidingLercheXYPosition(vCharge, lercheXPos, chi2LX, lercheYPos, chi2LY, nSlidePos);
+		PACSSAnalysis::CalcSlidingLercheXYPosition(event->GetChargeGC(), lercheXPos, chi2LX, lercheYPos, chi2LY, nSlidePos);
 
     if(i % 1000 == 0)
       cout << "Calculating positions for event " << i << ": " << "(" << lercheXPos << ", " << lercheYPos << ")" << endl;
