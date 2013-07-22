@@ -21,17 +21,19 @@ class PACSSAnalysis
 		virtual ~PACSSAnalysis();
 
 		// Analysis functions - declare static so we can use without an instance
-		static void CalcSlidingGaussXYPosition(COINCEvent *event, double &xPos, vector<double> &xChi2, double &yPos, vector<double> &yChi2, int nSlidePos);
-		static void CalcSlidingGaussXYPosition(LYSOEvent *event, double &xPos, vector<double> &xChi2, double &yPos, vector<double> &yChi2, int nSlidePos);
-		static void CalcSlidingLercheXYPosition(COINCEvent *event, double &xPos, vector<double> &xChi2, double &yPos, vector<double> &yChi2, int nSlidePos);
-		static void CalcSlidingLercheXYPosition(LYSOEvent *event, double &xPos, vector<double> &xChi2, double &yPos, vector<double> &yChi2, int nSlidePos);
+		//static void CalcSlidingGaussXYPosition(COINCEvent *event, double &xPos, vector<double> &xChi2, double &yPos, vector<double> &yChi2, int nSlidePos);
+		//static void CalcSlidingGaussXYPosition(LYSOEvent *event, double &xPos, vector<double> &xChi2, double &yPos, vector<double> &yChi2, int nSlidePos);
+		static void CalcSlidingLercheXYPosition(vector<double> charge, double &xPos, vector<double> &xChi2, double &yPos, vector<double> &yChi2, int nSlidePos);
+		//static void CalcSlidingLercheXYPosition(COINCEvent *event, double &xPos, vector<double> &xChi2, double &yPos, vector<double> &yChi2, int nSlidePos);
+		//static void CalcSlidingLercheXYPosition(LYSOEvent *event, double &xPos, vector<double> &xChi2, double &yPos, vector<double> &yChi2, int nSlidePos);
 		static vector<double> SubtractBaseline(vector<double> aWave, int nSamples);
 		static double CalcFWHM(TH1D *hProjection);
 		static vector<double> DifferentiateWaveform(vector<double> aWave, int nBLSamples);
 		static double CalcIMax(vector<double> aCurrentWave);
 		static double CalcDiffMin(vector<double> aCurrentWave);
-		static int CalcT50Offset(vector<double> aWave, int nBL);
-		static int CalcT90Offset(vector<double> aWave, int nBL);
+		static int CalcTXSample(vector<double> wave, double fracTX, int nBL);
+		//static int CalcT50Offset(vector<double> aWave, int nBL);
+		//static int CalcT90Offset(vector<double> aWave, int nBL);
 		static double CalcEnergySimple(vector<double> aWave, int nBL, int nAvg);
 		static vector<double> PoleZeroCorrect(vector<double> aWave, double decayConst);
 		static vector<double> TrapezoidalFilter(vector<double> aWave, int nPeak, int nGap, double PZCorr);
