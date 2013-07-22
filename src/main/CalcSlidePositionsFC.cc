@@ -30,8 +30,8 @@ int main(int argc, char *argv[])
 
 void CalcSlidePosFC(string inFileName, string outFileName, int nSlidePos)
 {
-	double gaussXPos, gaussYPos, lercheXPos, lercheYPos;
-	vector<double> chi2GX, chi2GY, chi2LX, chi2LY;
+	double lercheXPos, lercheYPos;
+	vector<double> chi2LX, chi2LY;
   // ROOT stuff
   TFile *rootFile = new TFile(inFileName.c_str(), "READ");
 	TTree *eventTree = (TTree*)rootFile->Get("COINCEvents");
@@ -39,9 +39,10 @@ void CalcSlidePosFC(string inFileName, string outFileName, int nSlidePos)
 	eventTree->SetBranchAddress("event", &event);
 
 	// Handle the output
+	string NPos = to_string(nSlidePos) + "PosFC";
 	TFile *fOut = new TFile(outFileName.c_str(), "RECREATE");
 	// Create the TTree for Analysis only if there isn't one already
-	TTree *tAnalysis = new TTree("98PosFC", "98PosFC");
+	TTree *tAnalysis = new TTree(NPos.c_str(), NPos.c_str());
 
 	// Get the flood correction tree
 	string aName = inFileName;
@@ -53,16 +54,15 @@ void CalcSlidePosFC(string inFileName, string outFileName, int nSlidePos)
 	tFC->SetBranchAddress("chargeFC", &chargeFC);
 
 	// Set the branch name depending on the number of sliding positions for clarity
-	string NPos = to_string(nSlidePos) + "Pos";
 	// Check if the branch for this analysis exists. If so, overwrite it, if not, make it
 	// Not found
-	string bName = "lercheX" + NPos + "FC";
+	string bName = "lercheX" + NPos;
 	tAnalysis->Branch(bName.c_str(), &lercheXPos);	
-	bName = "lercheY" + NPos + "FC";
+	bName = "lercheY" + NPos;
 	tAnalysis->Branch(bName.c_str(), &lercheYPos);	
-	bName = "chi2LX" + NPos + "FC";
+	bName = "chi2LX" + NPos;
 	tAnalysis->Branch(bName.c_str(), &chi2LX);	
-	bName = "chi2LY" + NPos + "FC";
+	bName = "chi2LY" + NPos;
 	tAnalysis->Branch(bName.c_str(), &chi2LY);	
  	cout << "ROOT file loaded, tree created." << endl;
 	
@@ -73,11 +73,9 @@ void CalcSlidePosFC(string inFileName, string outFileName, int nSlidePos)
 		eventTree->GetEntry(i);
 		tFC->GetEntry(i);
 
-		event->SetChargeGC(*chargeFC);
-
 		// Do analysis
 		//PACSSAnalysis::CalcSlidingGaussXYPosition(event, gaussXPos, chi2GX, gaussYPos, chi2GY, nSlidePos);
-		PACSSAnalysis::CalcSlidingLercheXYPosition(event, lercheXPos, chi2LX, lercheYPos, chi2LY, nSlidePos);
+		PACSSAnalysis::CalcSlidingLercheXYPosition(*chargeFC, lercheXPos, chi2LX, lercheYPos, chi2LY, nSlidePos);
 
     if(i % 1000 == 0)
       cout << "Calculating positions for event " << i << ": " << "(" << lercheXPos << ", " << lercheYPos << ")" << endl;
@@ -87,7 +85,7 @@ void CalcSlidePosFC(string inFileName, string outFileName, int nSlidePos)
 	tAnalysis->Write();
 	fOut->Close();
   rootFile->Close();
-  cout << "Calculated positions written to 98PosFC tree in " << inFileName << endl;
+  cout << "Calculated positions written to " << NPos << " tree in " << inFileName << endl;
   delete event;
 	return;
 }

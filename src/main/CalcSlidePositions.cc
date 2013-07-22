@@ -30,8 +30,8 @@ int main(int argc, char *argv[])
 
 void CalcSlidePos(string inFileName, string outFileName, int nSlidePos)
 {
-	double gaussXPos, gaussYPos, lercheXPos, lercheYPos;
-	vector<double> chi2GX, chi2GY, chi2LX, chi2LY;
+	double lercheXPos, lercheYPos;
+	vector<double> chi2LX, chi2LY;
   // ROOT stuff
   TFile *rootFile = new TFile(inFileName.c_str(), "READ");
 	TTree *eventTree = (TTree*)rootFile->Get("COINCEvents");
@@ -47,18 +47,10 @@ void CalcSlidePos(string inFileName, string outFileName, int nSlidePos)
 	// Set the branch name depending on the number of sliding positions for clarity
 	// Check if the branch for this analysis exists. If so, overwrite it, if not, make it
 	// Not found
-	string bName = "gaussX" + NPos;
-	tAnalysis->Branch(bName.c_str(), &gaussXPos);
-	bName = "gaussY" + NPos;
-	tAnalysis->Branch(bName.c_str(), &gaussYPos);
-	bName = "lercheX" + NPos;
+	string bName = "lercheX" + NPos;
 	tAnalysis->Branch(bName.c_str(), &lercheXPos);	
 	bName = "lercheY" + NPos;
 	tAnalysis->Branch(bName.c_str(), &lercheYPos);	
-	bName = "chi2GX" + NPos;
-	tAnalysis->Branch(bName.c_str(), &chi2GX);
-	bName = "chi2GY" + NPos;
-	tAnalysis->Branch(bName.c_str(), &chi2GY);
 	bName = "chi2LX" + NPos;
 	tAnalysis->Branch(bName.c_str(), &chi2LX);	
 	bName = "chi2LY" + NPos;
@@ -66,17 +58,19 @@ void CalcSlidePos(string inFileName, string outFileName, int nSlidePos)
  	cout << "ROOT file loaded, tree created." << endl;
 	
 	// Loop over all the events
+	vector<double> vCharge;
   for(int i=0;i < eventTree->GetEntries();i++)
   {
 		// Grab this event
 		eventTree->GetEntry(i);
+		vCharge = event->GetChargeGC();
 
 		// Do analysis
-		PACSSAnalysis::CalcSlidingGaussXYPosition(event, gaussXPos, chi2GX, gaussYPos, chi2GY, nSlidePos);
-		PACSSAnalysis::CalcSlidingLercheXYPosition(event, lercheXPos, chi2LX, lercheYPos, chi2LY, nSlidePos);
+		//PACSSAnalysis::CalcSlidingGaussXYPosition(event, gaussXPos, chi2GX, gaussYPos, chi2GY, nSlidePos);
+		PACSSAnalysis::CalcSlidingLercheXYPosition(vCharge, lercheXPos, chi2LX, lercheYPos, chi2LY, nSlidePos);
 
     if(i % 1000 == 0)
-      cout << "Calculating positions for event " << i << ": " << "(" << gaussXPos << ", " << gaussYPos << ")" << endl;
+      cout << "Calculating positions for event " << i << ": " << "(" << lercheXPos << ", " << lercheYPos << ")" << endl;
 		tAnalysis->Fill();
   }
   
