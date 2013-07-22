@@ -208,8 +208,7 @@ void ParseGE::ReadSingleEvent()
   uint64_t timestamp = word >> 16;
   ReadWord();
   timestamp = (timestamp << 32) + word;
-  event->SetTimestampGE((double)timestamp, false);
-	event->SetTimestampGE((double)(timestamp*(1000/clockFreq)), true);
+  event->SetTimestampGE((double)timestamp);
 	
 	// Account for the extra 2 words from the wrap
 	if(rawWrap)
@@ -253,19 +252,19 @@ void ParseGE::ReadSingleEvent()
   event->SetWFRaw(dRawTrace);
 
   // Energy samples
-  vector<int> energyTrace;
-  energyTrace.clear();
+  //vector<int> energyTrace;
+  //energyTrace.clear();
   if(energySampleLength > 0)
   {
     for(int i=0;i < energySampleLength;i++)
     {
       ReadWord();
-      energyTrace.push_back((int)word);
+      //energyTrace.push_back((int)word);
     }
   }
 	// Cast as double
-	vector<double> dEnergyTrace(energyTrace.begin(), energyTrace.end());
-  event->SetWFEnergy(dEnergyTrace);
+	//vector<double> dEnergyTrace(energyTrace.begin(), energyTrace.end());
+  //event->SetWFEnergy(dEnergyTrace);
 
   // Maximum energy value
   ReadWord();

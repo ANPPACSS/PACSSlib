@@ -43,9 +43,7 @@ void CalcDiffWaveIMax(string inFileName, string outFileName, int nBLSamples)
 	// Create the TTree for Analysis only if there isn't one already
 	TTree *tAnalysis = new TTree("DiffWaveIMax", "DiffWaveIMax");
 
-	string bName = "wfDiff";
-	tAnalysis->Branch(bName.c_str(), &wfDiff);
-	bName = "IMax";
+	string bName = "IMax";
 	tAnalysis->Branch(bName.c_str(), &IMax);	
 	bName = "diffMin";
 	tAnalysis->Branch(bName.c_str(), &diffMin);	

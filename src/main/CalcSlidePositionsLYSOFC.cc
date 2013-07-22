@@ -30,8 +30,8 @@ int main(int argc, char *argv[])
 
 void CalcSlidePosFC(string inFileName, string outFileName, int nSlidePos)
 {
-	double gaussXPos, gaussYPos, lercheXPos, lercheYPos;
-	vector<double> chi2GX, chi2GY, chi2LX, chi2LY;
+	double lercheXPos, lercheYPos;
+	vector<double> chi2LX, chi2LY;
   // ROOT stuff
   TFile *rootFile = new TFile(inFileName.c_str(), "READ");
 	TTree *eventTree = (TTree*)rootFile->Get("LYSOEvents");
@@ -57,18 +57,10 @@ void CalcSlidePosFC(string inFileName, string outFileName, int nSlidePos)
 	string NPos = to_string(nSlidePos) + "Pos";
 	// Check if the branch for this analysis exists. If so, overwrite it, if not, make it
 	// Not found
-	string bName = "gaussX" + NPos + "FC";
-	tAnalysis->Branch(bName.c_str(), &gaussXPos);
-	bName = "gaussY" + NPos + "FC";
-	tAnalysis->Branch(bName.c_str(), &gaussYPos);
-	bName = "lercheX" + NPos + "FC";
+	string bName = "lercheX" + NPos + "FC";
 	tAnalysis->Branch(bName.c_str(), &lercheXPos);	
 	bName = "lercheY" + NPos + "FC";
 	tAnalysis->Branch(bName.c_str(), &lercheYPos);	
-	bName = "chi2GX" + NPos + "FC";
-	tAnalysis->Branch(bName.c_str(), &chi2GX);
-	bName = "chi2GY" + NPos + "FC";
-	tAnalysis->Branch(bName.c_str(), &chi2GY);
 	bName = "chi2LX" + NPos + "FC";
 	tAnalysis->Branch(bName.c_str(), &chi2LX);	
 	bName = "chi2LY" + NPos + "FC";
@@ -83,14 +75,14 @@ void CalcSlidePosFC(string inFileName, string outFileName, int nSlidePos)
 		eventTree->GetEntry(i);
 		tFC->GetEntry(i);
 
-		event->SetChargeGC(*chargeFC);
+		//event->SetChargeGC(*chargeFC);
 
 		// Do analysis
-		PACSSAnalysis::CalcSlidingGaussXYPosition(event, gaussXPos, chi2GX, gaussYPos, chi2GY, nSlidePos);
-		PACSSAnalysis::CalcSlidingLercheXYPosition(event, lercheXPos, chi2LX, lercheYPos, chi2LY, nSlidePos);
+		//PACSSAnalysis::CalcSlidingGaussXYPosition(event, gaussXPos, chi2GX, gaussYPos, chi2GY, nSlidePos);
+		PACSSAnalysis::CalcSlidingLercheXYPosition(*chargeFC, lercheXPos, chi2LX, lercheYPos, chi2LY, nSlidePos);
 
     if(i % 1000 == 0)
-      cout << "Calculating positions for event " << i << ": " << "(" << gaussXPos << ", " << gaussYPos << ")" << endl;
+      cout << "Calculating positions for event " << i << ": " << "(" << lercheXPos << ", " << lercheYPos << ")" << endl;
 		tAnalysis->Fill();
 		nFilled++;
   }

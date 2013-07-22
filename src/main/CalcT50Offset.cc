@@ -58,8 +58,8 @@ void CalcT50Offset(string inFileName, string outFileName, int nBL)
 		eventTree->GetEntry(i);
 
 		// Do analysis
-		t50Ge = PACSSAnalysis::CalcT50Offset(event->GetWFRaw(), nBL);
-		t50LYSO = PACSSAnalysis::CalcT50Offset(event->GetWFLYSO(), nBL);
+		t50Ge = PACSSAnalysis::CalcTXSample(event->GetWFRaw(), 0.50, nBL);
+		t50LYSO = PACSSAnalysis::CalcTXSample(event->GetWFLYSO(), 0.50, nBL);
 		deltaT = 10.0*(t50Ge - t50LYSO);
 
     if(i % 10000 == 0)

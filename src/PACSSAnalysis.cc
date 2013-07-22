@@ -17,7 +17,7 @@ PACSSAnalysis::~PACSSAnalysis()
 }
 
 // ANALYSIS FUNCTIONS
-void PACSSAnalysis::CalcSlidingGaussXYPosition(COINCEvent *event, double &xPos, vector<double> &xChi2, double &yPos, vector<double> &yChi2, int nSlidePos)
+/*void PACSSAnalysis::CalcSlidingGaussXYPosition(COINCEvent *event, double &xPos, vector<double> &xChi2, double &yPos, vector<double> &yChi2, int nSlidePos)
 {
 	int x, y;
 	vector<double> charge = event->GetChargeGC();
@@ -143,9 +143,76 @@ void PACSSAnalysis::CalcSlidingGaussXYPosition(LYSOEvent *event, double &xPos, v
 	yPos = posMinY;
 
 	return;
+}*/
+
+void PACSSAnalysis::CalcSlidingLercheXYPosition(vector<double> charge, double &xPos, vector<double> &xChi2, double &yPos, vector<double> &yChi2, int nSlidePos)
+{
+	int x, y;
+	TH1D hX("hX", "", 8, 0.0, 49.0);
+	TH1D hY("hY", "", 8, 0.0, 49.0);
+
+	// Project the charge
+	for(int i=0;i < NUM_LYSO_PIXELS;i++)
+	{
+		PACSSAnalysis::ChanNumToXYPos(i, x, y);
+		hX.Fill(x, charge[i]);
+		hY.Fill(y, charge[i]);
+	}
+
+	// Fitting function and value trackers
+	string temp = "(sqrt(((x-[2])**2)+2.25))";
+	string ex = "(exp((-1.0)*[1]*"+temp+"))";
+  string sLerche = "[0]*[1]*"+ex+"/"+temp+"*(atan((25.0-[3])/"+temp+")-atan((-25.0-[3])/"+temp+"))";
+  sLerche += "+[4]";
+	TF1 fitLerche("lerche", sLerche.c_str());
+	double slidePosition = 0.0;
+	double minChi2LX = 50000000.0;			// something big
+	double posMinLX = 0.0;
+	double minChi2LY = 50000000.0;
+	double posMinLY = 0.0;
+	double ampLX = hX.GetBinContent(hX.GetMaximumBin());
+	double TLX = hX.GetBinContent(hX.GetMinimumBin());
+	double ampLY = hY.GetBinContent(hY.GetMaximumBin());
+	double TLY = hY.GetBinContent(hY.GetMinimumBin());
+	xChi2.clear();
+	yChi2.clear();
+	for(int i=0;i < nSlidePos;i++)
+	{
+		double tempChi2;
+		fitLerche.SetParameter(0, ampLX*3.0);
+	 	fitLerche.FixParameter(1, 0.2071);//alpha
+		fitLerche.FixParameter(2, slidePosition);
+	 	fitLerche.FixParameter(3, 36.4);//yo
+		fitLerche.SetParameter(4, TLX);
+		hX.Fit("lerche", "NBQ");
+		tempChi2 = (double)fitLerche.GetChisquare();
+		if(tempChi2 < minChi2LX)
+		{
+			minChi2LX = tempChi2;
+			posMinLX = slidePosition;
+		}
+		xChi2.push_back(tempChi2);
+		fitLerche.SetParameter(0, ampLY*3.0);
+		fitLerche.FixParameter(1, 0.2004);
+		fitLerche.FixParameter(3, 35.8);
+		fitLerche.SetParameter(4, TLY);
+		hY.Fit("lerche", "NBQ");
+		tempChi2 = (double)fitLerche.GetChisquare();
+		if(tempChi2 < minChi2LY)
+		{
+			minChi2LY = tempChi2;
+			posMinLY = slidePosition;
+		}
+		yChi2.push_back(tempChi2);
+		slidePosition += 49.0/(double)nSlidePos;
+	}
+	xPos = posMinLX;
+	yPos = posMinLY;
+
+	return;
 }
 
-void PACSSAnalysis::CalcSlidingLercheXYPosition(COINCEvent *event, double &xPos, vector<double> &xChi2, double &yPos, vector<double> &yChi2, int nSlidePos)
+/*void PACSSAnalysis::CalcSlidingLercheXYPosition(LYSOEvent *event, double &xPos, vector<double> &xChi2, double &yPos, vector<double> &yChi2, int nSlidePos)
 {
 	int x, y;
 	vector<double> charge = event->GetChargeGC();
@@ -211,75 +278,7 @@ void PACSSAnalysis::CalcSlidingLercheXYPosition(COINCEvent *event, double &xPos,
 	yPos = posMinLY;
 
 	return;
-}
-
-void PACSSAnalysis::CalcSlidingLercheXYPosition(LYSOEvent *event, double &xPos, vector<double> &xChi2, double &yPos, vector<double> &yChi2, int nSlidePos)
-{
-	int x, y;
-	vector<double> charge = event->GetChargeGC();
-	TH1D hX("hX", "", 8, 0.0, 49.0);
-	TH1D hY("hY", "", 8, 0.0, 49.0);
-
-	// Project the charge
-	for(int i=0;i < NUM_LYSO_PIXELS;i++)
-	{
-		event->ChanNumToXYPos(i, x, y);
-		hX.Fill(x, charge[i]);
-		hY.Fill(y, charge[i]);
-	}
-
-	// Fitting function and value trackers
-	string temp = "(sqrt(((x-[2])**2)+2.25))";
-	string ex = "(exp((-1.0)*[1]*"+temp+"))";
-  string sLerche = "[0]*[1]*"+ex+"/"+temp+"*(atan((25.0-[3])/"+temp+")-atan((-25.0-[3])/"+temp+"))";
-  sLerche += "+[4]";
-	TF1 fitLerche("lerche", sLerche.c_str());
-	double slidePosition = 0.0;
-	double minChi2LX = 50000000.0;			// something big
-	double posMinLX = 0.0;
-	double minChi2LY = 50000000.0;
-	double posMinLY = 0.0;
-	double ampLX = hX.GetBinContent(hX.GetMaximumBin());
-	double TLX = hX.GetBinContent(hX.GetMinimumBin());
-	double ampLY = hY.GetBinContent(hY.GetMaximumBin());
-	double TLY = hY.GetBinContent(hY.GetMinimumBin());
-	xChi2.clear();
-	yChi2.clear();
-	for(int i=0;i < nSlidePos;i++)
-	{
-		double tempChi2;
-		fitLerche.SetParameter(0, ampLX*3.0);
-	 	fitLerche.FixParameter(1, 0.2071);//alpha
-		fitLerche.FixParameter(2, slidePosition);
-	 	fitLerche.FixParameter(3, 36.4);//yo
-		fitLerche.SetParameter(4, TLX);
-		hX.Fit("lerche", "NBQ");
-		tempChi2 = (double)fitLerche.GetChisquare();
-		if(tempChi2 < minChi2LX)
-		{
-			minChi2LX = tempChi2;
-			posMinLX = slidePosition;
-		}
-		xChi2.push_back(tempChi2);
-		fitLerche.SetParameter(0, ampLY*3.0);
-		fitLerche.FixParameter(1, 0.2004);
-		fitLerche.FixParameter(3, 35.8);
-		fitLerche.SetParameter(4, TLY);
-		hY.Fit("lerche", "NBQ");
-		tempChi2 = (double)fitLerche.GetChisquare();
-		if(tempChi2 < minChi2LY)
-		{
-			minChi2LY = tempChi2;
-			posMinLY = slidePosition;
-		}
-		yChi2.push_back(tempChi2);
-		slidePosition += 49.0/(double)nSlidePos;
-	}
-	xPos = posMinLX;
-	yPos = posMinLY;
-
-	return;
-}
+}*/
 
 // Subtract the baseline. Use the first ~20% of samples as the average
 vector<double> PACSSAnalysis::SubtractBaseline(vector<double> aWave, int nSamples)
@@ -347,7 +346,7 @@ double PACSSAnalysis::CalcDiffMin(vector<double> aCurrentWave)
 	return diffMin;
 }
 
-int PACSSAnalysis::CalcT50Offset(vector<double> aWave, int nBL)
+/*int PACSSAnalysis::CalcT50Offset(vector<double> aWave, int nBL)
 {
 	TH1D hWF("hWF", "", (int)aWave.size(), 0, (int)aWave.size()-1);
 	// Subtract baseline
@@ -379,8 +378,24 @@ int PACSSAnalysis::CalcT90Offset(vector<double> aWave, int nBL)
 		iBin--;
 
 	return iBin;
-}
+}*/
 
+int PACSSAnalysis::CalcTXSample(vector<double> wave, double fracTX, int nBL)
+{
+	TH1D hWF("hWF", "", (int)wave.size(), 0, (int)wave.size()-1);
+	// Subtract baseline
+	wave = SubtractBaseline(wave, nBL);
+	for(size_t i=0;i < wave.size();i++)
+		hWF.Fill((int)i, wave.at(i));
+
+	int maxBin = hWF.GetMaximumBin();
+	int iBin = maxBin; // Start at the maximum and work backwards
+	double maxVal = hWF.GetBinContent(maxBin);
+	while(hWF.GetBinContent(iBin) > (maxVal*fracTX))
+		iBin--;
+
+	return iBin;
+}
 
 double PACSSAnalysis::CalcEnergySimple(vector<double> aWave, int nBL, int nAvg)
 {

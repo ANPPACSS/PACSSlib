@@ -43,12 +43,11 @@ class BaseLYSOEvent
 		void					 SetChargeGC(vector<double> newChargeGC);
 		void					 SetEnergyLYSO(double newEnergy);
 		void					 SetEnergyLYSOGC(double newEnergyGC);
-		void					 SetTimestampLYSO(double newTimestampNS, bool inNanoSecs=false);
+		void					 SetTimestampLYSO(double newTimestampLYSO);
 		void					 SetErrInput(bool newErrInput);
 		void					 SetErrOutOfRange(bool newErrOutOfRange);
 
 		// Other useful functions
-		void		 			 ChanNumToXYPos(int channel, int &x, int &y);
 		void					 ClearEvent();
 
 		ClassDef(BaseLYSOEvent, 1);

@@ -87,7 +87,7 @@ COINCRun::COINCRun(string newFileName): PACSSRun(newFileName)
 	posFCFile = new TFile(aName.c_str(), "READ");
 	if(posFCFile)
 	{
-		posFCTree = (TTree*)posFCFile->Get("98Pos");
+		posFCTree = (TTree*)posFCFile->Get("98PosFC");
 		rootFile->cd();
 		eventTree->AddFriend(posFCTree);
 	}
@@ -781,7 +781,7 @@ TH2D* COINCRun::PlotChargeMap(TCut inCut, bool gc)
 			cgc = event->GetCharge();
 		for(int i=0;i < NUM_LYSO_PIXELS;i++)
 		{
-			event->ChanNumToXYPos(i, x, y);
+			PACSSAnalysis::ChanNumToXYPos(i, x, y);
 			hCharge->Fill(x, y, cgc[i]);
 		}
 		if(i % reportFreq == 0)
@@ -852,7 +852,7 @@ TObjArray* COINCRun::PlotChargeProj(TCut inCut, bool gc)
 			charge = event->GetCharge();
 		for(int k=0;k < NUM_LYSO_PIXELS;k++)
 		{
-			event->ChanNumToXYPos(k, x, y);
+			PACSSAnalysis::ChanNumToXYPos(k, x, y);
 			hX->Fill(x, charge[k]);
 			hY->Fill(y, charge[k]);
 		}
@@ -1668,7 +1668,7 @@ TH2D* COINCRun::PlotDriftTimeMap(TCut inCut, string plotArgs)
 
 	cout << "Averaging histogram..." << endl;
 	// Average drift time for each pixel depending on how many Fill() calls we made
-	for (size_t k=101;k <= hDTMap->GetSize()-100;k++) {
+	for (int k=101;k <= hDTMap->GetSize()-100;k++) {
 		if(hits.at(k) != 0)
 			hDTMap->SetBinContent(k, hDTMap->GetBinContent(k)/hits.at(k));
 	}

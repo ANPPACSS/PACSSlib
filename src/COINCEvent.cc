@@ -29,7 +29,6 @@ void COINCEvent::CopyEvents(const LYSOEvent &newLYSO, const GEEvent &newGE)
 	energyLYSO = newLYSO.GetEnergyLYSO();
 	energyLYSOGC = newLYSO.GetEnergyLYSOGC();
 	timestampLYSO = newLYSO.GetTimestampLYSO(false);
-	timestampLYSONS = newLYSO.GetTimestampLYSO(true);
 	errInput = newLYSO.ErrInput();
 	errOutOfRange = newLYSO.ErrOutOfRange();
 
@@ -38,10 +37,7 @@ void COINCEvent::CopyEvents(const LYSOEvent &newLYSO, const GEEvent &newGE)
 	energyGEFirst = newGE.GetEnergyGEFirst();
 	energyGEMax = newGE.GetEnergyGEMax();
 	timestampGE = newGE.GetTimestampGE(false);
-	timestampGENS = newGE.GetTimestampGE(true);
 	wfRaw = newGE.GetWFRaw();
-	wfEnergy = newGE.GetWFEnergy();
-	wfDiff = newGE.GetWFDiff();
 	channel = newGE.GetChannel();
 	clockFreq = newGE.GetClockFreq();
 	wfLYSO = newGE.GetWFLYSO();
