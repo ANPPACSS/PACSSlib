@@ -87,7 +87,7 @@ COINCRun::COINCRun(string newFileName): PACSSRun(newFileName)
 	posFCFile = new TFile(aName.c_str(), "READ");
 	if(posFCFile)
 	{
-		posFCTree = (TTree*)posFCFile->Get("98Pos");
+		posFCTree = (TTree*)posFCFile->Get("98PosFC");
 		rootFile->cd();
 		eventTree->AddFriend(posFCTree);
 	}

@@ -56,18 +56,10 @@ void CalcSlidePosFC(string inFileName, string outFileName, int nSlidePos)
 	string NPos = to_string(nSlidePos) + "Pos";
 	// Check if the branch for this analysis exists. If so, overwrite it, if not, make it
 	// Not found
-	string bName = "gaussX" + NPos + "FC";
-	tAnalysis->Branch(bName.c_str(), &gaussXPos);
-	bName = "gaussY" + NPos + "FC";
-	tAnalysis->Branch(bName.c_str(), &gaussYPos);
-	bName = "lercheX" + NPos + "FC";
+	string bName = "lercheX" + NPos + "FC";
 	tAnalysis->Branch(bName.c_str(), &lercheXPos);	
 	bName = "lercheY" + NPos + "FC";
 	tAnalysis->Branch(bName.c_str(), &lercheYPos);	
-	bName = "chi2GX" + NPos + "FC";
-	tAnalysis->Branch(bName.c_str(), &chi2GX);
-	bName = "chi2GY" + NPos + "FC";
-	tAnalysis->Branch(bName.c_str(), &chi2GY);
 	bName = "chi2LX" + NPos + "FC";
 	tAnalysis->Branch(bName.c_str(), &chi2LX);	
 	bName = "chi2LY" + NPos + "FC";
@@ -84,11 +76,11 @@ void CalcSlidePosFC(string inFileName, string outFileName, int nSlidePos)
 		event->SetChargeGC(*chargeFC);
 
 		// Do analysis
-		PACSSAnalysis::CalcSlidingGaussXYPosition(event, gaussXPos, chi2GX, gaussYPos, chi2GY, nSlidePos);
+		//PACSSAnalysis::CalcSlidingGaussXYPosition(event, gaussXPos, chi2GX, gaussYPos, chi2GY, nSlidePos);
 		PACSSAnalysis::CalcSlidingLercheXYPosition(event, lercheXPos, chi2LX, lercheYPos, chi2LY, nSlidePos);
 
     if(i % 1000 == 0)
-      cout << "Calculating positions for event " << i << ": " << "(" << gaussXPos << ", " << gaussYPos << ")" << endl;
+      cout << "Calculating positions for event " << i << ": " << "(" << lercheXPos << ", " << lercheYPos << ")" << endl;
 		tAnalysis->Fill();
   }
   
