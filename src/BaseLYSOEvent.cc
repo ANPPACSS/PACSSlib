@@ -38,7 +38,8 @@ const double BaseLYSOEvent::GetEnergyLYSOGC() const
 const double BaseLYSOEvent::GetTimestampLYSO(bool inNanoSecs) const
 {
 	if(inNanoSecs)
-		return timestampLYSONS;
+		// 10 MHz sampling frequency
+		return timestampLYSO*(1000.0/10);
 	else
 		return timestampLYSO;
 }
@@ -77,12 +78,9 @@ void BaseLYSOEvent::SetEnergyLYSOGC(double newEnergyGC)
 	return;
 }
 
-void BaseLYSOEvent::SetTimestampLYSO(double newTimestampNS, bool inNanoSecs)
+void BaseLYSOEvent::SetTimestampLYSO(double newTimestampLYSO)
 {
-	if(inNanoSecs)
-		timestampLYSONS = newTimestampNS;
-	else
-		timestampLYSO = newTimestampNS;
+	timestampLYSO = newTimestampLYSO;
 	return;
 }
 
@@ -98,22 +96,12 @@ void BaseLYSOEvent::SetErrOutOfRange(bool newErrOutOfRange)
 	return;
 }
 
-void BaseLYSOEvent::ChanNumToXYPos(int channel, int &x, int &y)
-{
-  // Convert to mm: 49mm / 8 pixels = 6.125mm per pixel
-  // Assume the x,y position in mm is the middle of the pixel
-  x = 6.125*((channel % 8)+0.5);
-  y = 6.125*(floor(channel/8)+0.5);
-  return;
-}
-
 void BaseLYSOEvent::ClearEvent()
 {
 	charge.clear();
 	chargeGC.clear();
 	energyLYSO = 0.0;
 	energyLYSOGC = 0.0;
-	timestampLYSONS = 0.0;
 	timestampLYSO = 0.0;
 	errInput = false;
 	errOutOfRange = false;

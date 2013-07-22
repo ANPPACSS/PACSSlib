@@ -211,8 +211,8 @@ void ParseLYSO::ReadEvent()
     lastVertTimestamp = currTimestamp;
     // Don't forget to convert to nanoseconds!
 		lastRealTimestamp += resetOffset;
-    event->SetTimestampLYSO((double)lastRealTimestamp, false);
-		event->SetTimestampLYSO((double)(lastRealTimestamp*CLOCK_MULT_LYSO), true);
+    event->SetTimestampLYSO((double)lastRealTimestamp);
+		//event->SetTimestampLYSO((double)(lastRealTimestamp*CLOCK_MULT_LYSO), true);
   }
   // No clock reset - just add the time since the last event
   else
@@ -220,8 +220,8 @@ void ParseLYSO::ReadEvent()
     // Don't forget to convert to nanoseconds!
     //uint64_t realTimestamp = (uint64_t)(currTimestamp - lastVertTimestamp) + lastRealTimestamp;
     lastRealTimestamp += (uint64_t)(currTimestamp - lastVertTimestamp);
-		event->SetTimestampLYSO((double)lastRealTimestamp, false);
-		event->SetTimestampLYSO((double)(lastRealTimestamp*CLOCK_MULT_LYSO), true);
+		event->SetTimestampLYSO((double)lastRealTimestamp);
+		//event->SetTimestampLYSO((double)(lastRealTimestamp*CLOCK_MULT_LYSO), true);
     lastVertTimestamp = currTimestamp;
   }
 
