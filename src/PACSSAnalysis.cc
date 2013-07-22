@@ -154,7 +154,7 @@ void PACSSAnalysis::CalcSlidingLercheXYPosition(vector<double> charge, double &x
 	// Project the charge
 	for(int i=0;i < NUM_LYSO_PIXELS;i++)
 	{
-		event->ChanNumToXYPos(i, x, y);
+		PACSSAnalysis::ChanNumToXYPos(i, x, y);
 		hX.Fill(x, charge[i]);
 		hY.Fill(y, charge[i]);
 	}
