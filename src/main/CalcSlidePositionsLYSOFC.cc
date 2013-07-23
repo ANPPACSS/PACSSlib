@@ -30,8 +30,8 @@ int main(int argc, char *argv[])
 
 void CalcSlidePosFC(string inFileName, string outFileName, int nSlidePos)
 {
-	double lercheXPos, lercheYPos;
-	vector<double> chi2LX, chi2LY;
+	double gaussXPos, gaussYPos, lercheXPos, lercheYPos;
+	vector<double> chi2LX, chi2LY, chi2GX, chi2GY;
   // ROOT stuff
   TFile *rootFile = new TFile(inFileName.c_str(), "READ");
 	TTree *eventTree = (TTree*)rootFile->Get("LYSOEvents");
@@ -40,9 +40,10 @@ void CalcSlidePosFC(string inFileName, string outFileName, int nSlidePos)
 	cout << eventTree->GetEntries() << " events in raw data file." << endl;
 
 	// Handle the output
+	string NPos = to_string(nSlidePos) + "PosFC";
 	TFile *fOut = new TFile(outFileName.c_str(), "RECREATE");
 	// Create the TTree for Analysis only if there isn't one already
-	TTree *tAnalysis = new TTree("98PosFC", "98PosFC");
+	TTree *tAnalysis = new TTree(NPos.c_str(), NPos.c_str());
 
 	// Get the flood correction tree
 	string aName = inFileName;
@@ -54,17 +55,16 @@ void CalcSlidePosFC(string inFileName, string outFileName, int nSlidePos)
 	tFC->SetBranchAddress("chargeFC", &chargeFC);
 
 	// Set the branch name depending on the number of sliding positions for clarity
-	string NPos = to_string(nSlidePos) + "Pos";
 	// Check if the branch for this analysis exists. If so, overwrite it, if not, make it
 	// Not found
-	string bName = "lercheX" + NPos + "FC";
+	string bName = "lercheX" + NPos;
 	tAnalysis->Branch(bName.c_str(), &lercheXPos);	
-	bName = "lercheY" + NPos + "FC";
+	bName = "lercheY" + NPos;
 	tAnalysis->Branch(bName.c_str(), &lercheYPos);	
-	bName = "chi2LX" + NPos + "FC";
-	tAnalysis->Branch(bName.c_str(), &chi2LX);	
-	bName = "chi2LY" + NPos + "FC";
-	tAnalysis->Branch(bName.c_str(), &chi2LY);	
+	bName = "gaussY" + NPos;
+	tAnalysis->Branch(bName.c_str(), &gaussYPos);	
+	bName = "gaussX" + NPos;
+	tAnalysis->Branch(bName.c_str(), &gaussXPos);	
  	cout << "ROOT file loaded, tree created." << endl;
 	
 	int nFilled = 0;
@@ -78,7 +78,7 @@ void CalcSlidePosFC(string inFileName, string outFileName, int nSlidePos)
 		//event->SetChargeGC(*chargeFC);
 
 		// Do analysis
-		//PACSSAnalysis::CalcSlidingGaussXYPosition(event, gaussXPos, chi2GX, gaussYPos, chi2GY, nSlidePos);
+		PACSSAnalysis::CalcSlidingGaussXYPosition(*chargeFC, gaussXPos, chi2GX, gaussYPos, chi2GY, nSlidePos);
 		PACSSAnalysis::CalcSlidingLercheXYPosition(*chargeFC, lercheXPos, chi2LX, lercheYPos, chi2LY, nSlidePos);
 
     if(i % 1000 == 0)

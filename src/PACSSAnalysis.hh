@@ -22,7 +22,7 @@ class PACSSAnalysis
 
 		// Analysis functions - declare static so we can use without an instance
 		//static void CalcSlidingGaussXYPosition(COINCEvent *event, double &xPos, vector<double> &xChi2, double &yPos, vector<double> &yChi2, int nSlidePos);
-		//static void CalcSlidingGaussXYPosition(LYSOEvent *event, double &xPos, vector<double> &xChi2, double &yPos, vector<double> &yChi2, int nSlidePos);
+		static void CalcSlidingGaussXYPosition(vector<double> charge, double &xPos, vector<double> &xChi2, double &yPos, vector<double> &yChi2, int nSlidePos);
 		static void CalcSlidingLercheXYPosition(vector<double> charge, double &xPos, vector<double> &xChi2, double &yPos, vector<double> &yChi2, int nSlidePos);
 		//static void CalcSlidingLercheXYPosition(COINCEvent *event, double &xPos, vector<double> &xChi2, double &yPos, vector<double> &yChi2, int nSlidePos);
 		//static void CalcSlidingLercheXYPosition(LYSOEvent *event, double &xPos, vector<double> &xChi2, double &yPos, vector<double> &yChi2, int nSlidePos);

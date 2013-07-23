@@ -30,8 +30,8 @@ int main(int argc, char *argv[])
 
 void CalcSlidePos(string inFileName, string outFileName, int nSlidePos)
 {
-	double lercheXPos, lercheYPos;
-	vector<double> chi2LX, chi2LY;
+	double gaussXPos, gaussYPos, lercheXPos, lercheYPos;
+	vector<double> chi2LX, chi2LY, chi2GX, chi2GY;
   // ROOT stuff
   TFile *rootFile = new TFile(inFileName.c_str(), "READ");
 	TTree *eventTree = (TTree*)rootFile->Get("LYSOEvents");
@@ -39,22 +39,22 @@ void CalcSlidePos(string inFileName, string outFileName, int nSlidePos)
 	eventTree->SetBranchAddress("event", &event);
 
 	// Handle the output
+	string NPos = to_string(nSlidePos) + "Pos";
 	TFile *fOut = new TFile(outFileName.c_str(), "RECREATE");
 	// Create the TTree for Analysis only if there isn't one already
-	TTree *tAnalysis = new TTree("Analysis", "Analysis");
+	TTree *tAnalysis = new TTree(NPos.c_str(), NPos.c_str());
 
 	// Set the branch name depending on the number of sliding positions for clarity
-	string NPos = to_string(nSlidePos) + "Pos";
 	// Check if the branch for this analysis exists. If so, overwrite it, if not, make it
 	// Not found
 	string bName = "lercheX" + NPos;
 	tAnalysis->Branch(bName.c_str(), &lercheXPos);	
 	bName = "lercheY" + NPos;
 	tAnalysis->Branch(bName.c_str(), &lercheYPos);	
-	bName = "chi2LX" + NPos;
-	tAnalysis->Branch(bName.c_str(), &chi2LX);	
-	bName = "chi2LY" + NPos;
-	tAnalysis->Branch(bName.c_str(), &chi2LY);	
+	bName = "gaussX" + NPos;
+	tAnalysis->Branch(bName.c_str(), &gaussXPos);	
+	bName = "gaussY" + NPos;
+	tAnalysis->Branch(bName.c_str(), &gaussYPos);	
  	cout << "ROOT file loaded, tree created." << endl;
 	
 	// Loop over all the events
@@ -64,7 +64,7 @@ void CalcSlidePos(string inFileName, string outFileName, int nSlidePos)
 		eventTree->GetEntry(i);
 
 		// Do analysis
-		//PACSSAnalysis::CalcSlidingGaussXYPosition(event, gaussXPos, chi2GX, gaussYPos, chi2GY, nSlidePos);
+		PACSSAnalysis::CalcSlidingGaussXYPosition(event->GetChargeGC(), gaussXPos, chi2GX, gaussYPos, chi2GY, nSlidePos);
 		PACSSAnalysis::CalcSlidingLercheXYPosition(event->GetChargeGC(), lercheXPos, chi2LX, lercheYPos, chi2LY, nSlidePos);
 
     if(i % 1000 == 0)

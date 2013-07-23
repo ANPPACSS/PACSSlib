@@ -17,17 +17,17 @@ PACSSAnalysis::~PACSSAnalysis()
 }
 
 // ANALYSIS FUNCTIONS
-/*void PACSSAnalysis::CalcSlidingGaussXYPosition(COINCEvent *event, double &xPos, vector<double> &xChi2, double &yPos, vector<double> &yChi2, int nSlidePos)
+void PACSSAnalysis::CalcSlidingGaussXYPosition(vector<double> charge, double &xPos, vector<double> &xChi2, double &yPos, vector<double> &yChi2, int nSlidePos)
 {
 	int x, y;
-	vector<double> charge = event->GetChargeGC();
+	//vector<double> charge = event->GetChargeGC();
 	TH1D hX("hX", "", 8, 0.0, 49.0);
 	TH1D hY("hY", "", 8, 0.0, 49.0);
 
 	// Project the charge
 	for(int i=0;i < NUM_LYSO_PIXELS;i++)
 	{
-		event->ChanNumToXYPos(i, x, y);
+		PACSSAnalysis::ChanNumToXYPos(i, x, y);
 		hX.Fill(x, charge[i]);
 		hY.Fill(y, charge[i]);
 	}
@@ -81,6 +81,7 @@ PACSSAnalysis::~PACSSAnalysis()
 	return;
 }
 
+/*
 void PACSSAnalysis::CalcSlidingGaussXYPosition(LYSOEvent *event, double &xPos, vector<double> &xChi2, double &yPos, vector<double> &yChi2, int nSlidePos)
 {
 	int x, y;
