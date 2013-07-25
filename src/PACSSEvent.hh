@@ -21,6 +21,7 @@
 #include <TF1.h>
 #include <TGraph.h>
 #include <TCut.h>
+#include <TSystem.h>
 
 // Useful definitions for handling PACSS data
 #define NUM_LYSO_PIXELS  64

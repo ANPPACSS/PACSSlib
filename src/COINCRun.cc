@@ -23,74 +23,68 @@ COINCRun::COINCRun(string newFileName): PACSSRun(newFileName)
 	string aName = fileName;
 	aName.erase(aName.size()-5, 5); // erase the last 5 characters (.root)
 	aName += "_98pos.root";
-	posFile = new TFile(aName.c_str(), "READ");
-	if(posFile)
-	{
+	if (!gSystem->AccessPathName(aName.c_str())) {
+		posFile = new TFile(aName.c_str(), "READ");
 		posTree = (TTree*)posFile->Get("98Pos");
 		posTree->SetBranchAddress("lercheX98Pos", &lXPos);
 		posTree->SetBranchAddress("lercheY98Pos", &lYPos);
 		rootFile->cd();
 		eventTree->AddFriend(posTree);
-	}
+	} else { cout << "Could not open " << aName << endl; }
 	// Waveform analysis
 	aName = fileName;
 	aName.erase(aName.size()-5, 5); // erase the last 5 characters (.root)
 	aName += "_diffimax.root";
-	wfDiffFile = new TFile(aName.c_str(), "READ");
-	if(wfDiffFile)
-	{
+	if (!gSystem->AccessPathName(aName.c_str())) {
+		wfDiffFile = new TFile(aName.c_str(), "READ");
 		wfDiffTree = (TTree*)wfDiffFile->Get("DiffWaveIMax");
 		rootFile->cd();
 		eventTree->AddFriend(wfDiffTree);
-	}
+	} else { cout << "Could not open " << aName << endl; }
 	// T50 offset analysis
 	aName = fileName;
 	aName.erase(aName.size()-5, 5); // erase the last 5 characters (.root)
 	aName += "_t50deltat.root";
-	t50File = new TFile(aName.c_str(), "READ");
-	if(t50File)
-	{
+	if (!gSystem->AccessPathName(aName.c_str())) {
+		t50File = new TFile(aName.c_str(), "READ");
 		t50Tree = (TTree*)t50File->Get("T50Samples");
 		t50Tree->SetBranchAddress("t50LYSO", &t50LYSO);
 		t50Tree->SetBranchAddress("t50Ge", &t50Ge);
 		t50Tree->SetBranchAddress("deltaT", &deltaT);
 		rootFile->cd();
 		eventTree->AddFriend(t50Tree);
-	}
+	} else { cout << "Could not open " << aName << endl; }
 	// Separately calculated energy values
 	aName = fileName;
 	aName.erase(aName.size()-5, 5); // erase the last 5 characters (.root)
 	aName += "_energysimple.root";
-	eSimpleFile = new TFile(aName.c_str(), "READ");
-	if(eSimpleFile)
-	{
+	if (!gSystem->AccessPathName(aName.c_str())) {
+		eSimpleFile = new TFile(aName.c_str(), "READ");
 		eSimpleTree = (TTree*)eSimpleFile->Get("EnergySimple");
 		rootFile->cd();
 		eventTree->AddFriend(eSimpleTree);
-	}
+	} else { cout << "Could not open " << aName << endl; }
 	// Flood field correction factors
 	aName = fileName;
 	aName.erase(aName.size()-5, 5); // erase the last 5 characters (.root)
 	aName += "_floodcorrect.root";
-	floodFile = new TFile(aName.c_str(), "READ");
-	if(floodFile)
-	{
+	if (!gSystem->AccessPathName(aName.c_str())) {
+		floodFile = new TFile(aName.c_str(), "READ");
 		floodTree = (TTree*)floodFile->Get("FloodCorrect");
 		rootFile->cd();
 		eventTree->AddFriend(floodTree);
-	}
+	} else { cout << "Could not open " << aName << endl; }
 
 // Flood field corrected positions
 	aName = fileName;
 	aName.erase(aName.size()-5, 5); // erase the last 5 characters (.root)
 	aName += "_98posfc.root";
-	posFCFile = new TFile(aName.c_str(), "READ");
-	if(posFCFile)
-	{
+	if (!gSystem->AccessPathName(aName.c_str())) {
+		posFCFile = new TFile(aName.c_str(), "READ");
 		posFCTree = (TTree*)posFCFile->Get("98PosFC");
 		rootFile->cd();
 		eventTree->AddFriend(posFCTree);
-	}
+	} else { cout << "Could not open " << aName << endl; }
 
   // How many events? iEvent = 0 from PACSSRun initialization
   numEvents = eventTree->GetEntries();
